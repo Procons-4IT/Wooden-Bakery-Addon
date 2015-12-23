@@ -1,0 +1,51 @@
+<Application>
+  <Menus>
+    <action type="add">
+
+      <!--<Menu Checked="0" Enabled="1" FatherUID="2048" Image="" Position="2" String="Sales Order Line Closure"
+			Type="1" UniqueID="DABT_910">
+			</Menu>-->
+
+      <Menu Checked="0" Enabled="1" FatherUID="43520" Image="" Position="13" String="Wooden Bakery" Type="2" UniqueID="W_2000"></Menu>
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_2000" Image="" Position="0" String="Setup" Type="2" UniqueID="W_1000"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2000" Image="" Position="1" String="Transactions" Type="2" UniqueID="W_1100"></Menu>
+
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="0" String="Reason Code" Type="1" UniqueID="W_1001"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="1" String="WeekEnd Master" Type="1" UniqueID="W_1006"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="2" String="Document Type" Type="1" UniqueID="W_1009"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="3" String="Item Category " Type="1" UniqueID="W_1010"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="4" String="BP Category" Type="1" UniqueID="W_1011"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="5" String="Warhouse Type" Type="1" UniqueID="W_1012"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="6" String="User Mapping" Type="1" UniqueID="W_1007"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="7" String="Rebate Posting Setup" Type="1" UniqueID="W_1013"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_1000" Image="" Position="8" String="Approval template" Type="1" UniqueID="W_1008"></Menu>
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="0" String="Fixed Assets" Type="2" UniqueID="W_2100"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2100" Image="" Position="1" String="Asset Transactions" Type="1" UniqueID="W_1002"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2100" Image="" Position="2" String="Transactions Approval" Type="1" UniqueID="W_1005"></Menu>
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="1" String="Document Line Closing" Type="2" UniqueID="W_2101"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2101" Image="" Position="0" String="Sales / Purchase Order Closing" Type="1" UniqueID="W_1003"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2101" Image="" Position="1" String="Sales / Purchase Order Closing-Report" Type="1" UniqueID="W_1004"></Menu>
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="2" String="Supplier Price" Type="2" UniqueID="W_2102"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2102" Image="" Position="0" String="Supplier Price" Type="1" UniqueID="W_1014"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2102" Image="" Position="1" String="Supplier Price - Approval" Type="1" UniqueID="W_1015"></Menu>
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="3" String="Signed Document" Type="2" UniqueID="W_2103"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2103" Image="" Position="0" String="Delivery Document" Type="1" UniqueID="W_1016"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2103" Image="" Position="1" String="Delivery Document Report" Type="1" UniqueID="W_1017"></Menu>
+
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="4" String="Promotions" Type="2" UniqueID="W_2104"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2104" Image="" Position="0" String="Promotion Template" Type="1" UniqueID="W_1018"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2104" Image="" Position="1" String="Promotion Mapping" Type="1" UniqueID="W_1019"></Menu>
+
+      <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="5" String="Inventory Count" Type="2" UniqueID="W_2105"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2105" Image="" Position="0" String="Inventory Count" Type="1" UniqueID="W_1020"></Menu>
+
+    </action>
+  </Menus>
+</Application>

@@ -1,0 +1,1 @@
+Inventory Count Item Code : 041110C210-->ERROR : 1470000497 - Item 041110C210 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]

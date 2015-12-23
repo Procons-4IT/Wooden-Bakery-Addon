@@ -1,0 +1,20 @@
+﻿<Application>
+	<Menus>
+		<action type="remove">
+      <Menu UniqueID="W_2000"></Menu>
+      
+      
+      <!--<Menu UniqueID="DABT_910"></Menu>-->
+      <!--<menu UniqueID="W_1009"></menu>
+      <menu UniqueID="W_1008"></menu>
+      <menu UniqueID="W_1007"></menu>
+			<Menu UniqueID="W_1004"></Menu>
+      <Menu UniqueID="W_1003"></Menu>
+      <Menu UniqueID="W_1002"></Menu>
+      <Menu UniqueID="W_1001"></Menu>
+      <Menu UniqueID="W_1000"></Menu>
+      <Menu UniqueID="W_1100"></Menu>-->
+      
+		</action>
+	</Menus>
+</Application>
