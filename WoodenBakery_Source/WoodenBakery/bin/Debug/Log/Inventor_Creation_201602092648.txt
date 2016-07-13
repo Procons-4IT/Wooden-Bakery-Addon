@@ -1,0 +1,1 @@
+Inventory Count Ref : 9-->ERROR : 1470000497 - Item 50114136000-8389_N in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 2]

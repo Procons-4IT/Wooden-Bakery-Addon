@@ -1,0 +1,116 @@
+Inventory Count Item Code : 0043717101004-->ERROR : 1470000497 - Item 0043717101004 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]
+Inventory Count Item Code : 0043800641097-->ERROR : 1470000497 - Item 0043800641097 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]
+Inventory Count Item Code : 0044 -->Success
+Inventory Count Item Code : 0044000006808-->ERROR : 1470000497 - Item 0044000006808 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]
+Inventory Count Item Code : 0044000009298-->ERROR : 1470000497 - Item 0044000009298 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]
+Inventory Count Item Code : 50114136000-8389_01-->ERROR : 1470000497 - Item 50114136000-8389_01 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]
+Inventory Count Item Code : 50114136000-8389_05 -->Success
+Inventory Count Item Code : 50114136000-8389_06-->ERROR : 1470000497 - Item 50114136000-8389_06 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]
+Inventory Count Item Code : 50114136000-8389-38-->ERROR : 1470000497 - Item 50114136000-8389-38 in warehouse 01 has already been added to another open document [INC1.ItemCode][line: 1]
+Inventory Count Item Code : 50114136001-8389-40 -->Success
+Inventory Count Item Code : 50114136002-8389-42 -->Success
+Inventory Count Item Code : 50114136003-8389-46 -->Success
+Inventory Count Item Code : 50114136004-8389-48 -->Success
+Inventory Count Item Code : 50114136005-827-38 -->Success
+Inventory Count Item Code : 50114136006-827-40 -->Success
+Inventory Count Item Code : 50114136007-827-42 -->Success
+Inventory Count Item Code : 50114136008-827-44 -->Success
+Inventory Count Item Code : 50114136009-827-46 -->Success
+Inventory Count Item Code : 50114136010-827-48 -->Success
+Inventory Count Item Code : 50114136011-996-36R -->Success
+Inventory Count Item Code : 50114136012-996-38R -->Success
+Inventory Count Item Code : 50114136013-996-40R -->Success
+Inventory Count Item Code : 50114136014-996-42R -->Success
+Inventory Count Item Code : 50114136015-996-44R -->Success
+Inventory Count Item Code : 50114136016-996-46R -->Success
+Inventory Count Item Code : 50114136017-996-48R -->Success
+Inventory Count Item Code : 50114136020-8760-40R -->Success
+Inventory Count Item Code : 50114136025-8277-36R -->Success
+Inventory Count Item Code : 50114136026-8277-38R -->Success
+Inventory Count Item Code : 50114136027-8277-40R -->Success
+Inventory Count Item Code : 50114136028-8277-42R -->Success
+Inventory Count Item Code : 50114136032-8019-36 -->Success
+Inventory Count Item Code : 50114136033-8019-38 -->Success
+Inventory Count Item Code : 50114136035-8019-42 -->Success
+Inventory Count Item Code : 50114136036-8019-44 -->Success
+Inventory Count Item Code : 50114136053-595-36 -->Success
+Inventory Count Item Code : 50114136056-595-42 -->Success
+Inventory Count Item Code : 50114136057-595-44 -->Success
+Inventory Count Item Code : 50114136058-595-46 -->Success
+Inventory Count Item Code : 50114136104-8789-40 -->Success
+Inventory Count Item Code : 50114136105-8789-42 -->Success
+Inventory Count Item Code : 50114136106-8789-44 -->Success
+Inventory Count Item Code : 50114136107-8789-46 -->Success
+Inventory Count Item Code : 50114136108-8789-48 -->Success
+Inventory Count Item Code : 50114136742-996-36 -->Success
+Inventory Count Item Code : 50114136743-996-38 -->Success
+Inventory Count Item Code : 50114136745-996-42 -->Success
+Inventory Count Item Code : 50114136746-996-44 -->Success
+Inventory Count Item Code : 50114136747-996-46 -->Success
+Inventory Count Item Code : 50114136748-996-48 -->Success
+Inventory Count Item Code : A00002 -->Success
+Inventory Count Item Code : A00003 -->Success
+Inventory Count Item Code : A00004 -->Success
+Inventory Count Item Code : A00005 -->Success
+Inventory Count Item Code : A00006 -->Success
+Inventory Count Item Code : Alhpa -->Success
+Inventory Count Item Code : B10000 -->Success
+Inventory Count Item Code : Beta -->Success
+Inventory Count Item Code : BETA_01 -->Success
+Inventory Count Item Code : BETA_02 -->Success
+Inventory Count Item Code : BETA_04 -->Success
+Inventory Count Item Code : C00001 -->Success
+Inventory Count Item Code : C00002 -->Success
+Inventory Count Item Code : C00003 -->Success
+Inventory Count Item Code : C00004 -->Success
+Inventory Count Item Code : C00005 -->Success
+Inventory Count Item Code : C00006 -->Success
+Inventory Count Item Code : C00007 -->Success
+Inventory Count Item Code : C00008 -->Success
+Inventory Count Item Code : C00009 -->Success
+Inventory Count Item Code : C00010 -->Success
+Inventory Count Item Code : C00011 -->Success
+Inventory Count Item Code : CH000000000000000001 -->Success
+Inventory Count Item Code : CH000000000000000003 -->Success
+Inventory Count Item Code : Child Item 1 -->Success
+Inventory Count Item Code : Child Item 2 -->Success
+Inventory Count Item Code : Child Item 3 -->Success
+Inventory Count Item Code : CHILD_01 -->Success
+Inventory Count Item Code : CHILD_02 -->Success
+Inventory Count Item Code : CHILD_03 -->Success
+Inventory Count Item Code : CHILD_04 -->Success
+Inventory Count Item Code : CHILD_05 -->Success
+Inventory Count Item Code : CHILD_06 -->Success
+Inventory Count Item Code : CHILD_07 -->Success
+Inventory Count Item Code : CHILD_08 -->Success
+Inventory Count Item Code : CHILD_09 -->Success
+Inventory Count Item Code : CHILD_10 -->Success
+Inventory Count Item Code : CHILD_11 -->Success
+Inventory Count Item Code : CHILD_12 -->Success
+Inventory Count Item Code : CHILD_13 -->Success
+Inventory Count Item Code : COKDO -->Success
+Inventory Count Item Code : FG000000000000000001 -->Success
+Inventory Count Item Code : FINISHEDGOODS_01 -->Success
+Inventory Count Item Code : FINISHEDGOODS_02 -->Success
+Inventory Count Item Code : FINISHEDGOODS_03 -->Success
+Inventory Count Item Code : FINISHEDGOODS_04 -->Success
+Inventory Count Item Code : LM4029MC -->Success
+Inventory Count Item Code : P10001 -->Success
+Inventory Count Item Code : P10002 -->Success
+Inventory Count Item Code : P10003 -->Success
+Inventory Count Item Code : P10004 -->Success
+Inventory Count Item Code : S10000 -->Success
+Inventory Count Item Code : S21000 -->Success
+Inventory Count Item Code : S22000 -->Success
+Inventory Count Item Code : S23000 -->Success
+Inventory Count Item Code : S30000 -->Success
+Inventory Count Item Code : S40000 -->Success
+Inventory Count Item Code : S50000 -->Success
+Inventory Count Item Code : S60000 -->Success
+Inventory Count Item Code : S70000 -->Success
+Inventory Count Item Code : S80000 -->Success
+Inventory Count Item Code : S90000 -->Success
+Inventory Count Item Code : A00001-Consig -->Success
+Inventory Count Item Code : S91000 -->Success
+Inventory Count Item Code : S92000 -->Success
+Inventory Count Item Code : -->ERROR : 1470000284 - Specify an item code [INC1.ItemCode][line: 1]

@@ -139,7 +139,7 @@
                             If Not oForm.Items.Item("5").Specific.value = "" Then
                                 Dim objPromList As clsCustPromotionList
                                 objPromList = New clsCustPromotionList
-                                objPromList.LoadForm(oForm.Items.Item("5").Specific.value)
+                                objPromList.LoadForm(oForm.Items.Item("5").Specific.value, "C")
                             Else
                                 oApplication.Utilities.Message("Select Customer to Get Promotion List...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
                             End If
@@ -194,7 +194,7 @@
 
                         'Promotion List
                         oMenuItem = oApplication.SBO_Application.Menus.Item("1280") 'Data'
-                        If CType(oForm.Items.Item("40").Specific, SAPbouiCOM.ComboBox).Value = "C" Then
+                        If CType(oForm.Items.Item("40").Specific, SAPbouiCOM.ComboBox).Value <> "L" Then
                             If Not oMenuItem.SubMenus.Exists(mnu_CPRL_C) Then
                                 Dim oCreationPackage As SAPbouiCOM.MenuCreationParams
                                 oCreationPackage = oApplication.SBO_Application.CreateObject(SAPbouiCOM.BoCreatableObjectType.cot_MenuCreationParams)

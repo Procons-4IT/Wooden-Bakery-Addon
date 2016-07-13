@@ -116,7 +116,7 @@ Public Class clsDeliveryDocReport
 
 
             '  strSQL = "SELECT  T0.""DocEntry"", T0.""DocNum"",  T0.""DocDate"", T0.""CardCode"", T0.""CardName"" , T0.""U_Z_DelDate"", T0.""U_Z_IsDel"" FROM OINV T0  "
-            strSQL = "SELECT '" & strDocument & "' as ""Document Type"" , T0.""DocEntry"", T0.""DocNum"",  T0.""DocDate"", T0.""CardCode"", T0.""CardName"" , T0.""U_Z_DelDate"", T0.""U_Z_IsDel"" FROM " & strDocType & " T0  "
+            strSQL = "SELECT '" & strDocument & "' as ""Document Type"" , T0.""DocEntry"", T0.""DocNum"",  T0.""DocDate"", T0.""CardCode"", T0.""CardName"" ,T1.""U_Driver"" ""Driver Name"", T0.""U_Z_DelDate"",T0.""U_Z_ScnUser"", T0.""U_Z_IsDel"", T1.""U_WhseCode"" FROM " & strDocType & " T0 Left Outer Join OCRD T1 on T1.""CardCode""=T0.""CardCode"" "
 
             If strCardcode <> "" Then
                 strCondition = strCondition & " and ( T0.""CardCode"">='" & strCardcode & "'"
@@ -198,18 +198,17 @@ Public Class clsDeliveryDocReport
 
             oEditTextColumn = oGrid.Columns.Item("CardCode")
             oEditTextColumn.LinkedObjectType = "2"
-
             oGrid.Columns.Item("U_Z_DelDate").TitleObject.Caption = "Signed Date"
-
             oGrid.Columns.Item("U_Z_IsDel").Type = SAPbouiCOM.BoGridColumnType.gct_ComboBox
-
             oComoColumn = oGrid.Columns.Item("U_Z_IsDel")
             oComoColumn.ValidValues.Add("Y", "Yes")
             oComoColumn.ValidValues.Add("N", "No")
             oGrid.Columns.Item("U_Z_IsDel").Editable = False
             oComoColumn.DisplayType = SAPbouiCOM.BoComboDisplayType.cdt_Description
             oGrid.Columns.Item("U_Z_IsDel").TitleObject.Caption = "Is Signed"
-
+            oGrid.Columns.Item("U_Z_ScnUser").TitleObject.Caption = "Scanned User"
+            oGrid.Columns.Item("U_Z_ScnUser").Editable = False
+            oGrid.Columns.Item("U_WhseCode").TitleObject.Caption = "Ware House"
             oGrid.AutoResizeColumns()
             oGrid.SelectionMode = SAPbouiCOM.BoMatrixSelect.ms_None
 

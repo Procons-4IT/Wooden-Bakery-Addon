@@ -1,0 +1,3 @@
+﻿DocType	DocumentNumber	CustomerCode	CustomerName	LineNum	ItemCode	ItemDesc	Quantity	Remakrs
+Purchase Order	42	16100003	S0005	ABDO H.MOUKARZEL	0	I-1000101001	Flour Type Zero Dora	Closed Successfully	
+Purchase Order	42	16100003	S0005	ABDO H.MOUKARZEL	1	I-1000101002	Flour Type Zero Siblin	Closed Successfully	

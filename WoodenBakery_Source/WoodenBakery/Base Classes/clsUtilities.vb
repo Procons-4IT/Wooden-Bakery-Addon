@@ -8,11 +8,273 @@ Public Class clsUtilities
     Private strDecSep As String = "."
     Private intQtyDec As Integer = 3
     Private FormNum As Integer
+    Private oRecordSet As SAPbobsCOM.Recordset
 
     Public Sub New()
         MyBase.New()
         FormNum = 1
     End Sub
+
+    Public Function GetData(ByVal oForm As SAPbouiCOM.Form, ByVal oLoadForm As SAPbouiCOM.Form, ByVal strID As String, ByVal oMatrix As SAPbouiCOM.Matrix, ByVal oDBDataSourceLines As SAPbouiCOM.DBDataSource) As Boolean
+        Dim _retVal As Boolean
+        oRecordSet = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+        Try
+            Dim strPath As String = CType(oForm.Items.Item(strID).Specific, SAPbouiCOM.StaticText).Caption
+            If strPath.Length > 0 Then
+                If strPath.Length > 0 Then
+
+                    Dim intCol As Integer = 0
+                    Dim txtRows() As String
+                    Dim fields() As String
+                    txtRows = System.IO.File.ReadAllLines(strPath)
+                    Dim intRow As Integer = 0
+                    intRow = 0
+
+                    oMatrix.Clear()
+                    oMatrix.FlushToDataSource()
+                    oMatrix.LoadFromDataSource()
+                    Dim intAddRows As Integer = txtRows.Length - 1
+                    If intAddRows > 1 Then
+                        intAddRows -= 1
+                        oMatrix.AddRow(intAddRows + 1, -1)
+                    End If
+                    oMatrix.FlushToDataSource()
+
+                    For Each txtrow As String In txtRows
+                        If intRow = 0 Then
+                            fields = txtrow.Split(",")
+                        ElseIf intRow > 0 Then
+                            fields = txtrow.Split(",")
+                            If fields.Length > 3 Then
+
+
+                                'CType(oLoadForm.Items.Item("4").Specific, SAPbouiCOM.StaticText).Caption = "Importing Item Code : " + fields(0) + " And Record No : " + intRow.ToString() + ""
+                                oDBDataSourceLines.SetValue("LineId", intRow - 1, (intRow + 1).ToString())
+                                oDBDataSourceLines.SetValue("U_Z_ItmCode", intRow - 1, fields(0))
+                                Dim strQry As String = " Select ""ItemName"" From OITM Where ""ItemCode"" = '" & fields(0) & "'"
+                                Dim oUOMRS As SAPbobsCOM.Recordset
+                                oUOMRS = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+                                oUOMRS.DoQuery(strQry)
+                                If Not oUOMRS.EoF Then
+                                    oDBDataSourceLines.SetValue("U_Z_ItmName", intRow - 1, oUOMRS.Fields.Item(0).Value)
+                                End If
+                                oDBDataSourceLines.SetValue("U_Z_WareHouse", intRow - 1, fields(1))
+                                oDBDataSourceLines.SetValue("U_Z_Status", intRow - 1, "O")
+                                oDBDataSourceLines.SetValue("U_Z_Qty", intRow - 1, fields(3))
+
+                                If fields(2) <> "" Then
+
+                                    oDBDataSourceLines.SetValue("U_Z_UOM", intRow - 1, fields(2))
+                                    Dim dblIQty As Double
+                                    Dim strIUOM As String = String.Empty
+                                    getInventoryQty(fields(0), fields(2), CDbl(fields(3)), strIUOM, dblIQty)
+                                    oDBDataSourceLines.SetValue("U_Z_IUOM", intRow - 1, strIUOM)
+                                    oDBDataSourceLines.SetValue("U_Z_IQty", intRow - 1, dblIQty)
+                                Else
+
+                                    oDBDataSourceLines.SetValue("U_Z_UOM", intRow - 1, "Manual")
+                                    oDBDataSourceLines.SetValue("U_Z_IUOM", intRow - 1, "Manual")
+                                    oDBDataSourceLines.SetValue("U_Z_IQty", intRow - 1, fields(3))
+
+                                End If
+
+                            End If
+
+                            
+                        End If
+                        intRow = intRow + 1
+                        _retVal = True
+                    Next
+                    oMatrix.LoadFromDataSource()
+                    oMatrix.FlushToDataSource()
+                End If
+            End If
+            Return _retVal
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Function
+
+    Public Function getInventoryQty(ByVal strItemCode As String, ByVal strRUOM As String, ByVal dblRQty As Double, ByRef strIUOM As String, ByRef dblIQty As Double)
+        Try
+            Dim oUOMRS As SAPbobsCOM.Recordset
+            Dim strQry As String = String.Empty
+            Dim intUOMEntry, intIUOMEntry As Integer
+            strQry = " Select ""UomEntry"" From OUOM Where ""UomCode"" = '" & strRUOM & "'"
+            oUOMRS = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+            oUOMRS.DoQuery(strQry)
+            If Not oUOMRS.EoF Then
+                intUOMEntry = oUOMRS.Fields.Item(0).Value
+                If intUOMEntry <> -1 Then
+
+                    strQry = " Select T1.""AltQty"",T1.""BaseQty"" From OITM T0 JOIN UGP1 T1 "
+                    strQry += " On T0.""UgpEntry"" = T1.""UgpEntry"""
+                    strQry += " Where T1.""UomEntry"" = '" & intUOMEntry & "'"
+                    strQry += " And T0.""ItemCode"" = '" & strItemCode & "'"
+                    oUOMRS.DoQuery(strQry)
+                    If Not oUOMRS.EoF Then
+
+                        Dim dblAltQty As Double = CDbl(oUOMRS.Fields.Item(0).Value)
+                        Dim dblBaseQty As Double = CDbl(oUOMRS.Fields.Item(1).Value)
+
+                        Dim dblRPInvQty As Double = (1 / ((dblAltQty / dblBaseQty))) * CDbl(dblRQty)
+                        Dim dblInvQty As Double = 0
+
+                        strQry = " Select T0.""IUoMEntry"" From OITM T0  "
+                        strQry += " Where T0.""ItemCode"" = '" & strItemCode & "'"
+                        oUOMRS.DoQuery(strQry)
+                        If Not oUOMRS.EoF Then
+                            intIUOMEntry = oUOMRS.Fields.Item(0).Value
+                        End If
+
+                        If intIUOMEntry <> intUOMEntry Then
+
+                            strQry = " Select T1.""AltQty"",T1.""BaseQty"",T2.""UomCode"" From OITM T0 JOIN UGP1 T1 "
+                            strQry += " On T0.""UgpEntry"" = T1.""UgpEntry"" JOIN OUOM T2 On T2.""UomEntry"" = T0.""IUoMEntry"" "
+                            strQry += " Where T1.""UomEntry"" = '" & intIUOMEntry & "'"
+                            strQry += " And T0.""ItemCode"" = '" & strItemCode & "'"
+                            oUOMRS.DoQuery(strQry)
+                            If Not oUOMRS.EoF Then
+
+                                Dim dblAltQty1 As Double = CDbl(oUOMRS.Fields.Item(0).Value)
+                                Dim dblBaseQty1 As Double = CDbl(oUOMRS.Fields.Item(1).Value)
+
+                                dblInvQty = (dblAltQty1 / dblBaseQty1) * dblRPInvQty
+
+                                ' oDBDataSourceLines.SetValue("U_Z_IUOM", intRow - 1, oUOMRS.Fields.Item("UomCode").Value)
+                                ' oDBDataSourceLines.SetValue("U_Z_IQty", intRow - 1, dblInvQty)
+                                strIUOM = oUOMRS.Fields.Item("UomCode").Value
+                                dblIQty = dblInvQty
+
+                            End If
+                        Else
+
+                            strQry = " Select T2.""UomCode"" From OITM T0 JOIN UGP1 T1 "
+                            strQry += " On T0.""UgpEntry"" = T1.""UgpEntry"" JOIN OUOM T2 On T2.""UomEntry"" = T0.""IUoMEntry"" "
+                            strQry += " Where T1.""UomEntry"" = '" & intIUOMEntry & "'"
+                            strQry += " And T0.""ItemCode"" = '" & strItemCode & "'"
+                            oUOMRS.DoQuery(strQry)
+                            If Not oUOMRS.EoF Then
+
+                                ' Dim dblIBaseQty1 As Double = CDbl(oUOMRS.Fields.Item(0).Value)
+                                ' dblInvQty = CDbl(dblBInvQty) * CDbl(dblIBaseQty1) * CDbl(fields(3))
+
+                                ' oDBDataSourceLines.SetValue("U_Z_IUOM", intRow - 1, oUOMRS.Fields.Item("UomCode").Value)
+                                ' oDBDataSourceLines.SetValue("U_Z_IQty", intRow - 1, CDbl(Fields(3)))
+
+                                strIUOM = oUOMRS.Fields.Item("UomCode").Value
+                                dblIQty = dblRQty
+
+                            End If
+                        End If
+
+                    End If
+                Else
+                    'oDBDataSourceLines.SetValue("U_Z_UOM", intRow - 1, "Manual")
+                    'oDBDataSourceLines.SetValue("U_Z_IUOM", intRow - 1, "Manual")
+                    'oDBDataSourceLines.SetValue("U_Z_IQty", intRow - 1, Fields(3))
+
+                    strIUOM = "Manual"
+                    dblIQty = dblRQty
+
+                End If
+            End If
+        Catch ex As Exception
+
+        End Try
+
+
+    End Function
+
+    Public Function LoadMessageForm(ByVal XMLFile As String, ByVal FormType As String) As SAPbouiCOM.Form
+        LoadXMLFiles(XMLFile)
+        Return Nothing
+    End Function
+
+    Public Function ValidateFile(ByVal oForm As SAPbouiCOM.Form, ByVal strID As String) As Boolean
+        Dim _retVal As Boolean = True
+        Try
+            Dim strPath As String = CType(oForm.Items.Item(strID).Specific, SAPbouiCOM.StaticText).Caption
+            If Path.GetExtension(strPath) <> ".csv" And Path.GetExtension(strPath) <> ".CSV" Then
+                _retVal = False
+                oApplication.Utilities.Message("In Valid File Format...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+            Else
+                _retVal = True
+            End If
+            Return _retVal
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Function
+
+    Public Sub OpenFileDialogBox(ByVal oForm As SAPbouiCOM.Form, ByVal strID As String)
+        Dim _retVal As String = String.Empty
+        Try
+            FileOpen()
+            CType(oForm.Items.Item(strID).Specific, SAPbouiCOM.StaticText).Caption = strFilepath
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Sub
+
+#Region "FileOpen"
+    Private Sub FileOpen()
+        Try
+            Dim mythr As New System.Threading.Thread(AddressOf ShowFileDialog)
+            mythr.SetApartmentState(Threading.ApartmentState.STA)
+            mythr.Start()
+            mythr.Join()
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Sub
+
+    Private Sub ShowFileDialog()
+        Try
+            Dim oDialogBox As New OpenFileDialog
+            Dim strMdbFilePath As String
+            Dim oProcesses() As Process
+            Try
+                oProcesses = Process.GetProcessesByName("SAP Business One")
+                If oProcesses.Length <> 0 Then
+                    For i As Integer = 0 To oProcesses.Length - 1
+                        Dim MyWindow As New clsListener.WindowWrapper(oProcesses(i).MainWindowHandle)
+                        oDialogBox.Filter = " Excel | *.csv;*.CSV"
+                        If oDialogBox.ShowDialog(MyWindow) = DialogResult.OK Then
+                            strMdbFilePath = oDialogBox.FileName
+                            strFilepath = oDialogBox.FileName
+                            Exit For
+                        Else
+                            Exit For
+                        End If
+                    Next
+                End If
+            Catch ex As Exception
+                oApplication.Utilities.Message(ex.Message, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+            Finally
+            End Try
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Sub
+#End Region
+
+
+    Public Function ValidateItemIdentifier(aItemCode As String) As Boolean
+        Dim oItem As SAPbobsCOM.Recordset
+        oItem = oApplication.Company.GetBusinessObject(BoObjectTypes.BoRecordset)
+        If blnIsHanaDB = True Then
+            oItem.DoQuery("Select ifnull(""U_Z_Identifier"",'F') from OITM where ""ItemCode""='" & aItemCode & "'")
+        Else
+            oItem.DoQuery("Select isnull(""U_Z_Identifier"",'F') from OITM where ""ItemCode""='" & aItemCode & "'")
+        End If
+        If oItem.Fields.Item(0).Value = "F" Then
+            Return False
+        Else
+            Return True
+        End If
+
+    End Function
 
     Public Function UnlockSpecificDate(aForm As SAPbouiCOM.Form) As Boolean
         Dim oUser As String = oApplication.Company.UserName
@@ -304,7 +566,7 @@ Public Class clsUtilities
                 End If
                 oRec1.MoveNext()
             Next
-            If strItemUser <> "" Then
+            If 1 = 1 Then 'strItemUser <> "" Then
                 oRec1.DoQuery("Update OITM set ""U_Z_USERCODE""='" & strItemUser & "' where ""U_Z_ITCCODE""='" & oRec.Fields.Item("U_Z_Code").Value & "'")
             End If
             oRec.MoveNext()
@@ -322,7 +584,7 @@ Public Class clsUtilities
                 End If
                 oRec1.MoveNext()
             Next
-            If strItemUser <> "" Then
+            If 1 = 1 Then 'If strItemUser <> "" Then
                 oRec1.DoQuery("Update OCRD set ""U_Z_USERCODE""='" & strItemUser & "' where ""U_Z_BPCCODE""='" & oRec.Fields.Item("U_Z_Code").Value & "'")
             End If
             oRec.MoveNext()
@@ -341,7 +603,7 @@ Public Class clsUtilities
                 End If
                 oRec1.MoveNext()
             Next
-            If strItemUser <> "" Then
+            If 1 = 1 Then 'If strItemUser <> "" Then
                 oRec1.DoQuery("Update OWHS set ""U_Z_USERCODE""='" & strItemUser & "' where ""U_Z_WHSCODE""='" & oRec.Fields.Item("U_Z_Code").Value & "'")
             End If
             oRec.MoveNext()
@@ -379,18 +641,25 @@ Public Class clsUtilities
                 End If
 
                 If oCFL.ObjectType = "4" Then 'Item Code
-                    oCons = oCFL.GetConditions()
+                    If oForm.TypeEx <> frm_FATransaction Then
+                        oCons = oCFL.GetConditions()
 
-                    If oCons.Count = 0 Then
-                        oCon = oCons.Add()
+                        If oCons.Count = 0 Then
+                            oCon = oCons.Add()
+                        Else
+                            oCon = oCons.Item(0)
+                        End If
+
+                        oCon.Alias = "U_Z_USERCODE"
+                        oCon.Operation = SAPbouiCOM.BoConditionOperation.co_CONTAIN
+                        oCon.CondVal = strUserCode
+                        oCFL.SetConditions(oCons)
                     Else
-                        oCon = oCons.Item(0)
+
+                       
+
                     End If
 
-                    oCon.Alias = "U_Z_USERCODE"
-                    oCon.Operation = SAPbouiCOM.BoConditionOperation.co_CONTAIN
-                    oCon.CondVal = strUserCode
-                    oCFL.SetConditions(oCons)
                 End If
                 If oCFL.ObjectType = "64" Then 'Warehouse
                     If oForm.TypeEx <> frm_Z_OICT Then
@@ -407,7 +676,7 @@ Public Class clsUtilities
                         oCon.CondVal = strUserCode
                         oCFL.SetConditions(oCons)
                     End If
-                   
+
                 End If
             End If
         Catch ex As Exception
@@ -1738,7 +2007,18 @@ Public Class clsUtilities
         Try
             Dim oRec As SAPbobsCOM.Recordset
             oRec = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-            oRec.DoQuery("Select T0.""CreateDate"" ""CreateDt"", * from ""@Z_OVPL"" T0 inner Join OUSR T1 on T0.""UserSign""=T1.""INTERNAL_K""   where ""DocEntry""='" & aDocEntry & "'")
+            'oRec.DoQuery("Select T0.""CreateDate"" ""CreateDt"", * from ""@Z_OVPL"" T0 inner Join OUSR T1 on T0.""UserSign""=T1.""INTERNAL_K""   where ""DocEntry""='" & aDocEntry & "'")
+            Dim strQuery1 As String = String.Empty
+            If blnIsHanaDB Then
+                strQuery1 = " Select T0.""DocNum"",T0.""CreateDate"" ""CreateDt"","
+                strQuery1 &= " (Case When ifnull(""U_Z_CPrice"",0) = 0 Then ""U_Z_UPrice"" Else ""U_Z_CPrice"" End ) As ""U_Z_CPrice"", "
+                strQuery1 &= " (Case When ifnull(""U_Z_CCurrency"",'') = '' Then ""U_Z_UCurrency"" Else ""U_Z_CCurrency"" End) As ""U_Z_CCurrency"", "
+                strQuery1 &= " ""U_Z_UPrice"",""U_Z_UCurrency"",""U_NAME"",""U_Z_ItemCode"",""U_Z_CardCode"",""U_Z_AppStatus"" "
+                strQuery1 &= " from ""@Z_OVPL"" T0 inner Join OUSR T1 on T0.""UserSign""=T1.""INTERNAL_K"" where ""DocEntry""='" & aDocEntry & "'"
+            Else
+                ' strQuery1 = "Select T0.""CreateDate"" ""CreateDt"",isnull(""U_Z_UPrice"",""U_Z_CPrice"") As ""U_Z_CPrice"",isnull(""U_Z_CCurrency"",""U_Z_CCurrency"") As ""U_Z_CCurrency"", * from ""@Z_OVPL"" T0 inner Join OUSR T1 on T0.""UserSign""=T1.""INTERNAL_K"" where ""DocEntry""='" & aDocEntry & "'"
+            End If
+            oRec.DoQuery(strQuery1)
             If oRec.RecordCount > 0 Then
                 If oRec.Fields.Item("U_Z_AppStatus").Value = "A" Then
                     Dim dtDate As Date = oRec.Fields.Item("CreateDt").Value
@@ -1747,7 +2027,7 @@ Public Class clsUtilities
                     strQuery &= " , ""U_Z_UCurrency""='" & oRec.Fields.Item("U_Z_CCurrency").Value & "' "
                     strQuery &= " , ""U_Z_CPrice""='" & oRec.Fields.Item("U_Z_UPrice").Value & "' "
                     strQuery &= " , ""U_Z_CCurrency""='" & oRec.Fields.Item("U_Z_UCurrency").Value & "' "
-                    strQuery &= " , ""U_Z_ReqBy""='" & oRec.Fields.Item("U_Name").Value & "' "
+                    strQuery &= " , ""U_Z_ReqBy""='" & oRec.Fields.Item("U_NAME").Value & "' "
                     strQuery &= " , ""U_Z_ReqDate""='" & dtDate.ToString("yyyy-MM-dd") & "'"
                     strQuery &= " , ""U_Z_AppBy""='" & oApplication.Company.UserName & "' "
                     strQuery &= " , ""U_Z_AppDate""='" & Now.Date.ToString("yyyy-MM-dd") & "'"
@@ -1769,7 +2049,7 @@ Public Class clsUtilities
             oRec = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             Dim strQuery As String
             strQuery = "Select ""U_Z_CPrice"",""U_Z_CCurrency"" from OSCN where ""ItemCode""='" & strItemCode & "'"
-            strQuery &= "and ""CardCode""='" & strCardCode & "'"
+            strQuery &= "and ""CardCode""='" & strCardCode.Trim() & "'"
             oRec.DoQuery(strQuery)
             If oRec.RecordCount > 0 Then
                 strCurrency = oRec.Fields.Item("U_Z_CCurrency").Value
@@ -1809,73 +2089,74 @@ Public Class clsUtilities
             oUpdateRecord = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
             oRecordSet = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
 
-            
+
             If IO.Directory.Exists(System.Windows.Forms.Application.StartupPath.ToString() & "\Log") = False Then
                 IO.Directory.CreateDirectory(System.Windows.Forms.Application.StartupPath.ToString() & "\Log")
             End If
             Dim strFile As String = "\Log\Inventor_Creation_" + System.DateTime.Now.ToString("yyyyMMddmmss") + ".txt"
 
-            strQuery = "Select T0.""LineId"",T1.""U_Z_CntDate"",T0.""U_Z_ItmCode"",T0.""U_Z_Qty"",T0.""U_Z_UOM"",T0.""U_Z_WareHouse"" From ""@Z_ICT1"" T0 JOIN ""@Z_OICT"" T1 On T0.""DocEntry"" = T1.""DocEntry"" "
+            strQuery = "Select T1.""U_Z_CntDate"",T0.""U_Z_ItmCode"",SUM(T0.""U_Z_IQty"") ""U_Z_IQty"",T0.""U_Z_IUOM"",T0.""U_Z_WareHouse"" From ""@Z_ICT1"" T0 JOIN ""@Z_OICT"" T1 On T0.""DocEntry"" = T1.""DocEntry"" "
             strQuery += " Where T1.""DocEntry"" = '" & strRef & "'"
             If Not blnIsHanaDB Then
                 strQuery += " And ISNULL(""U_Z_ICRef"",'') = '' "
             Else
                 strQuery += " And IFNULL(""U_Z_ICRef"",'') = '' "
             End If
+            strQuery += " And T0.""U_Z_ItmCode"" Is Not Null Group By T0.""U_Z_ItmCode"",T1.""U_Z_CntDate"",T0.""U_Z_IUOM"",T0.""U_Z_WareHouse"" "
 
             oRecordSet.DoQuery(strQuery)
             If Not oRecordSet.EoF Then
                 Dim blnRowExist As Boolean = False
+
+                Dim oCS As SAPbobsCOM.CompanyService = oApplication.Company.GetCompanyService()
+                Dim oICS As SAPbobsCOM.InventoryCountingsService = oCS.GetBusinessService(ServiceTypes.InventoryCountingsService)
+                Dim oIC As SAPbobsCOM.InventoryCounting = oICS.GetDataInterface(InventoryCountingsServiceDataInterfaces.icsInventoryCounting)
+
+                oIC.CountDate = oRecordSet.Fields.Item("U_Z_CntDate").Value
+                oIC.SingleCounterType = CounterTypeEnum.ctUser
+                oIC.SingleCounterID = oApplication.Company.UserSignature
+                oIC.UserFields.Item("U_Z_ICTREF").Value = strRef
+                'oIC.UserFields.Item("U_Z_ICTREFL").Value = oRecordSet.Fields.Item("LineId").Value.ToString
+                Dim oICLS As SAPbobsCOM.InventoryCountingLines = oIC.InventoryCountingLines
+
                 While Not oRecordSet.EoF
                     If 1 = 1 Then
 
-                        Dim oCS As SAPbobsCOM.CompanyService = oApplication.Company.GetCompanyService()
-                        Dim oICS As SAPbobsCOM.InventoryCountingsService = oCS.GetBusinessService(ServiceTypes.InventoryCountingsService)
-                        Dim oIC As SAPbobsCOM.InventoryCounting = oICS.GetDataInterface(InventoryCountingsServiceDataInterfaces.icsInventoryCounting)
-
-                        oIC.CountDate = oRecordSet.Fields.Item("U_Z_CntDate").Value
-                        oIC.SingleCounterType = CounterTypeEnum.ctUser
-                        oIC.SingleCounterID = oApplication.Company.UserSignature
-                        oIC.UserFields.Item("U_Z_ICTREF").Value = strRef
-                        oIC.UserFields.Item("U_Z_ICTREFL").Value = oRecordSet.Fields.Item("LineId").Value.ToString
-
                         blnRowExist = True
                         Dim intRow As Integer = 0
-
-                        Dim oICLS As SAPbobsCOM.InventoryCountingLines = oIC.InventoryCountingLines
-
                         blnRowExist = True
+
                         Dim oICL As SAPbobsCOM.InventoryCountingLine = oICLS.Add
 
                         oICL.ItemCode = oRecordSet.Fields.Item("U_Z_ItmCode").Value
                         oICL.Counted = BoYesNoEnum.tYES
-                        oICL.CountedQuantity = oRecordSet.Fields.Item("U_Z_Qty").Value
+                        oICL.CountedQuantity = oRecordSet.Fields.Item("U_Z_IQty").Value
                         oICL.WarehouseCode = oRecordSet.Fields.Item("U_Z_WareHouse").Value
-                        oICL.UoMCode = oRecordSet.Fields.Item("U_Z_UOM").Value
+                        oICL.UoMCode = oRecordSet.Fields.Item("U_Z_IUOM").Value
 
-
-                        If blnRowExist Then
-                            Try
-                                Dim oICP As SAPbobsCOM.InventoryCountingParams = oICS.Add(oIC)
-                                If oICP.DocumentEntry > 0 Then
-                                    strQuery = "Update ""@Z_ICT1"" Set ""U_Z_ICRef"" = '" & oICP.DocumentEntry.ToString & "'"
-                                    strQuery += ",""U_Z_Status"" = 'C' "
-                                    strQuery += " Where ""DocEntry"" = '" & strRef & "'"
-                                    strQuery += " And ""LineId"" = '" & oRecordSet.Fields.Item("LineId").Value.ToString() & "'"
-                                    oUpdateRecord.DoQuery(strQuery)
-                                    Trace_ProcessCall("Inventory Count Item Code : " & oRecordSet.Fields.Item("U_Z_ItmCode").Value.ToString() & " -->Success", strFile)
-                                Else
-                                    Trace_ProcessCall("Inventory Count Item Code : " & oRecordSet.Fields.Item("U_Z_ItmCode").Value.ToString() & "-->ERROR ERRORCODE :" & oApplication.Company.GetLastErrorCode().ToString() & " ERRORDESC : " & oApplication.Company.GetLastErrorDescription().ToString(), strFile)
-                                End If
-                            Catch ex As Exception
-                                Trace_ProcessCall("Inventory Count Item Code : " & oRecordSet.Fields.Item("U_Z_ItmCode").Value.ToString() & "-->ERROR : " & ex.Message, strFile)
-                            End Try
-                        End If
                     End If
                     oRecordSet.MoveNext()
                 End While
 
-            
+
+                If blnRowExist Then
+                    Try
+                        Dim oICP As SAPbobsCOM.InventoryCountingParams = oICS.Add(oIC)
+                        If oICP.DocumentEntry > 0 Then
+                            strQuery = "Update ""@Z_ICT1"" Set ""U_Z_ICRef"" = '" & oICP.DocumentEntry.ToString & "'"
+                            strQuery += ",""U_Z_Status"" = 'C' "
+                            strQuery += " Where ""DocEntry"" = '" & strRef & "'"
+                            'strQuery += " And ""LineId"" = '" & oRecordSet.Fields.Item("LineId").Value.ToString() & "'"
+                            oUpdateRecord.DoQuery(strQuery)
+                            Trace_ProcessCall("Inventory Count Ref : " & strRef & " -->Success", strFile)
+                        Else
+                            Trace_ProcessCall("Inventory Count Ref : " & strRef & "-->ERROR ERRORCODE :" & oApplication.Company.GetLastErrorCode().ToString() & " ERRORDESC : " & oApplication.Company.GetLastErrorDescription().ToString(), strFile)
+                        End If
+                    Catch ex As Exception
+                        Trace_ProcessCall("Inventory Count Ref : " & strRef & "-->ERROR : " & ex.Message, strFile)
+                    End Try
+                End If
+
                 Dim strPath As String = System.Windows.Forms.Application.StartupPath.ToString() & "\Log" & strFile
                 If (File.Exists(strPath)) Then
                     System.Diagnostics.Process.Start(strPath)

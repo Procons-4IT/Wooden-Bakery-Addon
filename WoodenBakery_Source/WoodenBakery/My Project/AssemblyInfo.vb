@@ -8,11 +8,11 @@ Imports System.Runtime.InteropServices
 
 ' Review the values of the assembly attributes
 
-<Assembly: AssemblyTitle("WoodenBakery")> 
-<Assembly: AssemblyDescription("WoodenBakery-Addon")> 
+<Assembly: AssemblyTitle("WoodenBakery_Addon")> 
+<Assembly: AssemblyDescription("WoodenBakery_Addon")> 
 <Assembly: AssemblyCompany("Procons-4it")> 
-<Assembly: AssemblyProduct("WoodenBakery")> 
-<Assembly: AssemblyCopyright("Copyright © procons-4it-2015")> 
+<Assembly: AssemblyProduct("WoodenBakery_Addon")> 
+<Assembly: AssemblyCopyright("Copyright © procons-4it-2016")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>

@@ -1,0 +1,3 @@
+﻿DocType	DocumentNumber	CustomerCode	CustomerName	LineNum	ItemCode	ItemDesc	Quantity	Remakrs
+Sales Order	112	16100001	C0005	Abou Fadi	0	S-3001001001	Pita White Big (Bag*8 Loaves 1000 Grs)	Closed Successfully	
+Sales Order	112	16100001	C0005	Abou Fadi	1	S-3001001001	Pita White Big (Bag*8 Loaves 1000 Grs)	Closed Successfully	

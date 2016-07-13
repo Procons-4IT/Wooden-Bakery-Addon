@@ -232,7 +232,7 @@ Public Class clsPromotionMapping
             oCons = oCFL.GetConditions()
             oCon = oCons.Add()
             oCon.Alias = "CardType"
-            oCon.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL
+            oCon.Operation = SAPbouiCOM.BoConditionOperation.co_NOT_EQUAL
             oCon.CondVal = "C"
             oCFL.SetConditions(oCons)
 
@@ -287,7 +287,7 @@ Public Class clsPromotionMapping
             End If
 
             If strProperty.Length > 0 Then
-                strqry += " And ""QryGroup"" " + strProperty + " = 'Y'"
+                strqry += " And ""QryGroup" + strProperty + """  = 'Y'"
             End If
 
             oCustomerGrid.DataTable.ExecuteQuery(strqry)

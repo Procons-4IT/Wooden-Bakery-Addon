@@ -218,7 +218,7 @@ Public Class clsSOPOClosingReport
 #End Region
 
     Private Sub GenerateFile(aform As SAPbouiCOM.Form)
-        Dim strDocType, strReasonCode, strDocDate, strDocDate1, strCardcode, strCardCode1, strItemCode, strItemCode1, strCondition, strSQL As String
+        Dim strDocType, strReasonCode, strDocDate, strDocDate1, strCardcode, strCardCode1, strItemCode, strItemCode1, strCondition, strSQL, strItemGroup As String
         Dim dtDate, dtDate1 As Date
         oCombobox = aform.Items.Item("7").Specific
         strDocType = oCombobox.Selected.Value
@@ -229,11 +229,12 @@ Public Class clsSOPOClosingReport
         strCardCode1 = oApplication.Utilities.getEdittextvalue(aform, "17")
         strItemCode = oApplication.Utilities.getEdittextvalue(aform, "19")
         strItemCode1 = oApplication.Utilities.getEdittextvalue(aform, "21")
+        strItemGroup = CType(oForm.Items.Item("29").Specific, SAPbouiCOM.ComboBox).Selected.Value
 
         If strDocType = "SO" Then
-            strSQL = "SELECT  T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"", T1.""U_Z_RECODE"" FROM ORDR T0  INNER JOIN RDR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"""
+            strSQL = "SELECT  T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"", T1.""U_Z_RECODE"" FROM ORDR T0  INNER JOIN RDR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"" INNER JOIN OITM T2 ON T1.""ItemCode"" = T2.""ItemCode"" INNER JOIN OITB T3 ON T3.""ItmsGrpCod"" = T2.""ItmsGrpCod"" "
         Else
-            strSQL = "SELECT  T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"", T1.""U_Z_RECODE"" FROM OPOR T0  INNER JOIN POR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"""
+            strSQL = "SELECT  T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"", T1.""U_Z_RECODE"" FROM OPOR T0  INNER JOIN POR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"" INNER JOIN OITM T2 ON T1.""ItemCode"" = T2.""ItemCode"" INNER JOIN OITB T3 ON T3.""ItmsGrpCod"" = T2.""ItmsGrpCod"" "
         End If
 
         If strReasonCode <> "" Then
@@ -279,6 +280,14 @@ Public Class clsSOPOClosingReport
         Else
             strCondition = strCondition & " and 1=1) "
         End If
+
+
+        If strItemGroup <> "" Then
+            strCondition = strCondition & " and T2.""ItmsGrpCod""= '" & strItemGroup & "'"
+        Else
+            strCondition = strCondition & " and 1=1  "
+        End If
+
         strSQL = strSQL & " Where  T1.""LineStatus""='C' and " & strCondition
         Dim oRec As SAPbobsCOM.Recordset
         oRec = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
@@ -541,7 +550,7 @@ Public Class clsSOPOClosingReport
                 oCombobox.ValidValues.Remove(intRow, SAPbouiCOM.BoSearchKey.psk_Index)
             Next
             oCombobox.ValidValues.Add("", "")
-            oTempRec.DoQuery("Select ItmsGrpCod,ItmsGrpNam From OITB")
+            oTempRec.DoQuery("Select ""ItmsGrpCod"",""ItmsGrpNam"" From OITB")
             For intRow As Integer = 0 To oTempRec.RecordCount - 1
                 oCombobox.ValidValues.Add(oTempRec.Fields.Item("ItmsGrpCod").Value, oTempRec.Fields.Item("ItmsGrpNam").Value)
                 oTempRec.MoveNext()

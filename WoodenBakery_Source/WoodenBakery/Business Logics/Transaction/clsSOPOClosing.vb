@@ -40,9 +40,7 @@ Public Class clsSOPOClosing
         oCombobox.ValidValues.Add("PO", "Purchase Order")
         oCombobox.Select(0, SAPbouiCOM.BoSearchKey.psk_Index)
         oCombobox.ExpandType = SAPbouiCOM.BoExpandType.et_DescriptionOnly
-        oCombobox.ExpandType = SAPbouiCOM.BoExpandType.et_DescriptionOnly
-
-
+        FillCombo(oForm)
         oForm.PaneLevel = 1
         oForm.Freeze(False)
     End Sub
@@ -101,7 +99,7 @@ Public Class clsSOPOClosing
 
 #Region "Data Bind"
     Private Sub DataBind(aForm As SAPbouiCOM.Form)
-        Dim strDocType, strReasonCode, strDocDate, strDocDate1, strCardcode, strCardCode1, strItemCode, strItemCode1, strCondition, strSQL As String
+        Dim strItemGroup, strCust_Route, strDocNo, strDocNo1, strDocType, strReasonCode, strDocDate, strDocDate1, strCardcode, strCardCode1, strItemCode, strItemCode1, strCondition, strSQL As String
         Dim dtDate, dtDate1 As Date
         Try
             aForm.Freeze(True)
@@ -114,11 +112,15 @@ Public Class clsSOPOClosing
             strCardCode1 = oApplication.Utilities.getEdittextvalue(aForm, "17")
             strItemCode = oApplication.Utilities.getEdittextvalue(aForm, "19")
             strItemCode1 = oApplication.Utilities.getEdittextvalue(aForm, "21")
+            strItemGroup = CType(oForm.Items.Item("29").Specific, SAPbouiCOM.ComboBox).Selected.Value
+            strDocNo = oApplication.Utilities.getEdittextvalue(aForm, "30")
+            strDocNo1 = oApplication.Utilities.getEdittextvalue(aForm, "30_")
+            strCust_Route = oApplication.Utilities.getEdittextvalue(aForm, "31")
 
             If strDocType = "SO" Then
-                strSQL = "SELECT 'Y' ""Select"", T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"",T1.""OpenCreQty""  ""OpenQty"", T1.""U_Z_RECODE"",T1.""OpenQty"" As ""OpenQty1"" FROM ORDR T0  INNER JOIN RDR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"""
+                strSQL = "SELECT 'Y' ""Select"", T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""VisOrder"" ""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"",T1.""OpenCreQty""  ""OpenQty"", T1.""U_Z_RECODE"",T1.""OpenQty"" As ""OpenQty1"" FROM ORDR T0  INNER JOIN RDR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"" INNER JOIN OITM T2 ON T1.""ItemCode"" = T2.""ItemCode"" INNER JOIN OITB T3 ON T3.""ItmsGrpCod"" = T2.""ItmsGrpCod"" INNER JOIN OCRD T4 ON T0.""CardCode"" = T4.""CardCode"" Left Outer  JOIN ""@CUSTOMERROUTE"" T5 ON T5.""Code"" = T4.""U_Cust_Route"" "
             Else
-                strSQL = "SELECT 'Y' ""Select"", T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"",T1.""OpenCreQty""  ""OpenQty"", T1.""U_Z_RECODE"",T1.""OpenQty"" As ""OpenQty1"" FROM OPOR T0  INNER JOIN POR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"""
+                strSQL = "SELECT 'Y' ""Select"", T1.""DocEntry"", T0.""DocNum"", T0.""DocDate"", T0.""CardCode"", T0.""CardName"", T1.""VisOrder"" ""LineNum"", T1.""ItemCode"", T1.""Dscription"", T1.""Quantity"",T1.""OpenCreQty""  ""OpenQty"", T1.""U_Z_RECODE"",T1.""OpenQty"" As ""OpenQty1"" FROM OPOR T0  INNER JOIN POR1 T1 ON T0.""DocEntry"" = T1.""DocEntry"" INNER JOIN OITM T2 ON T1.""ItemCode"" = T2.""ItemCode"" INNER JOIN OITB T3 ON T3.""ItmsGrpCod"" = T2.""ItmsGrpCod"" INNER JOIN OCRD T4 ON T0.""CardCode"" = T4.""CardCode"" Left Outer  JOIN ""@CUSTOMERROUTE"" T5 ON T5.""Code"" = T4.""U_Cust_Route"" "
             End If
 
             'If strReasonCode <> "" Then
@@ -126,6 +128,7 @@ Public Class clsSOPOClosing
             'Else
             '    strCondition = "1=1"
             'End If
+
             strCondition = "1=1"
 
             If strCardcode <> "" Then
@@ -151,7 +154,6 @@ Public Class clsSOPOClosing
                 strCondition = strCondition & " and 1=1) "
             End If
 
-
             If strDocDate <> "" Then
                 dtDate = oApplication.Utilities.GetDateTimeValue(strDocDate)
                 strCondition = strCondition & " and ( T0.""DocDate"">='" & dtDate.ToString("yyyy-MM-dd") & "'"
@@ -164,6 +166,32 @@ Public Class clsSOPOClosing
             Else
                 strCondition = strCondition & " and 1=1) "
             End If
+
+            If strDocNo <> "" Then
+                strCondition = strCondition & " and ( T0.""DocNum"">='" & strDocNo & "'"
+            Else
+                strCondition = strCondition & " and ( 1=1 "
+            End If
+            If strDocNo1 <> "" Then
+                strCondition = strCondition & " and T0.""DocNum""<='" & strDocNo1 & "')"
+            Else
+                strCondition = strCondition & " and 1=1) "
+            End If
+
+
+            If strItemGroup <> "" Then
+                strCondition = strCondition & " and T2.""ItmsGrpCod""= '" & strItemGroup & "'"
+            Else
+                strCondition = strCondition & " and 1=1  "
+            End If
+
+
+            If strCust_Route <> "" Then
+                strCondition = strCondition & " and T5.""Code""= '" & strCust_Route & "'"
+            Else
+                strCondition = strCondition & " and 1=1  "
+            End If
+
             strSQL = strSQL & " Where  T1.""LineStatus""='O' and " & strCondition
             oGrid = aForm.Items.Item("22").Specific
             oGrid.DataTable.ExecuteQuery(strSQL)
@@ -284,9 +312,9 @@ Public Class clsSOPOClosing
                         blnErrorflag = True
                     Else
                         If oCombobox.Selected.Value = "SO" Then
-                            oRec.DoQuery("Update  RDR1 set ""U_Z_RECODE""='" & strReasoncode & "' where ""DocEntry""=" & oGrid.DataTable.GetValue("DocEntry", intRow) & " and ""LineNum""=" & oGrid.DataTable.GetValue("LineNum", intRow))
+                            oRec.DoQuery("Update  RDR1 set ""U_Z_RECODE""='" & strReasoncode & "' where ""DocEntry""=" & oGrid.DataTable.GetValue("DocEntry", intRow) & " and ""VisOrder""=" & oGrid.DataTable.GetValue("LineNum", intRow))
                         Else
-                            oRec.DoQuery("Update  POR1 set ""U_Z_RECODE""='" & strReasoncode & "' where ""DocEntry""=" & oGrid.DataTable.GetValue("DocEntry", intRow) & " and ""LineNum""=" & oGrid.DataTable.GetValue("LineNum", intRow))
+                            oRec.DoQuery("Update  POR1 set ""U_Z_RECODE""='" & strReasoncode & "' where ""DocEntry""=" & oGrid.DataTable.GetValue("DocEntry", intRow) & " and ""VisOrder""=" & oGrid.DataTable.GetValue("LineNum", intRow))
                         End If
                         s.Append(strDocType + vbTab)
                         s.Append(oGrid.DataTable.GetValue("DocEntry", intRow).ToString + vbTab)
@@ -336,6 +364,27 @@ Public Class clsSOPOClosing
                             Case SAPbouiCOM.BoEventTypes.et_FORM_LOAD
                                 oForm = oApplication.SBO_Application.Forms.Item(FormUID)
 
+                            Case SAPbouiCOM.BoEventTypes.et_COMBO_SELECT
+                                oForm = oApplication.SBO_Application.Forms.Item(FormUID)
+                                If pVal.ItemUID = "7" Then
+                                    oCombobox = oForm.Items.Item("7").Specific
+                                    If oCombobox.Selected.Value = "SO" Then
+                                        CType(oForm.Items.Item("30").Specific, SAPbouiCOM.EditText).ChooseFromListUID = "CFL_7"
+                                        oEditText = oForm.Items.Item("30").Specific
+                                        oEditText.ChooseFromListAlias = "DocNum"
+                                        CType(oForm.Items.Item("30_").Specific, SAPbouiCOM.EditText).ChooseFromListUID = "CFL_7_0"
+                                        oEditText = oForm.Items.Item("30_").Specific
+                                        oEditText.ChooseFromListAlias = "DocNum"
+                                    Else
+                                        CType(oForm.Items.Item("30").Specific, SAPbouiCOM.EditText).ChooseFromListUID = "CFL_8"
+
+                                        oEditText = oForm.Items.Item("30").Specific
+                                        oEditText.ChooseFromListAlias = "DocNum"
+                                        CType(oForm.Items.Item("30_").Specific, SAPbouiCOM.EditText).ChooseFromListUID = "CFL_8_0"
+                                        oEditText = oForm.Items.Item("30_").Specific
+                                        oEditText.ChooseFromListAlias = "DocNum"
+                                    End If
+                                End If
                             Case SAPbouiCOM.BoEventTypes.et_KEY_DOWN
 
                             Case SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED
@@ -368,6 +417,10 @@ Public Class clsSOPOClosing
                                         'End If
                                         '       oApplication.Company.StartTransaction()
                                         Dim strFile As String = "\Log\Closing_Documents" + System.DateTime.Now.ToString("yyyyMMddmmss") + ".txt"
+                                        'If File.Exists(strFile) Then
+                                        'Else
+                                        '    File.Create(strFile)
+                                        'End If
                                         CloseDOcumentLines(oForm, strFile)
                                         If blnErrorflag = False Then
                                             'If oApplication.Company.InTransaction() Then
@@ -414,12 +467,24 @@ Public Class clsSOPOClosing
                                             val = oDataTable.GetValue("ItemCode", 0)
                                             oApplication.Utilities.setEdittextvalue(oForm, pVal.ItemUID, val)
                                         End If
-                                        If oCFL.ObjectType = "2" Then
+                                        If oCFL.ObjectType = "2" And pVal.ItemUID <> "31" Then
                                             val = oDataTable.GetValue("CardCode", 0)
                                             oApplication.Utilities.setEdittextvalue(oForm, pVal.ItemUID, val)
                                         End If
                                         If oCFL.ObjectType = "Z_RECO" Then
                                             val = oDataTable.GetValue("U_Z_Code", 0)
+                                            oApplication.Utilities.setEdittextvalue(oForm, pVal.ItemUID, val)
+                                        End If
+                                        If oCFL.ObjectType = "17" Then
+                                            val = oDataTable.GetValue("DocNum", 0)
+                                            oApplication.Utilities.setEdittextvalue(oForm, pVal.ItemUID, val)
+                                        End If
+                                        If oCFL.ObjectType = "22" Then
+                                            val = oDataTable.GetValue("DocNum", 0)
+                                            oApplication.Utilities.setEdittextvalue(oForm, pVal.ItemUID, val)
+                                        End If
+                                        If pVal.ItemUID = "31" Then
+                                            val = oDataTable.GetValue("Code", 0)
                                             oApplication.Utilities.setEdittextvalue(oForm, pVal.ItemUID, val)
                                         End If
 
@@ -541,6 +606,28 @@ Public Class clsSOPOClosing
                     oCFL.SetConditions(oCons)
                 End If
             End If
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Sub
+
+    Private Sub FillCombo(ByVal aForm As SAPbouiCOM.Form)
+        Try
+            Dim oTempRec As SAPbobsCOM.Recordset
+            oTempRec = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+
+
+            oCombobox = aForm.Items.Item("29").Specific
+            For intRow As Integer = oCombobox.ValidValues.Count - 1 To 0 Step -1
+                oCombobox.ValidValues.Remove(intRow, SAPbouiCOM.BoSearchKey.psk_Index)
+            Next
+            oCombobox.ValidValues.Add("", "")
+            oTempRec.DoQuery("Select ""ItmsGrpCod"",""ItmsGrpNam"" From OITB")
+            For intRow As Integer = 0 To oTempRec.RecordCount - 1
+                oCombobox.ValidValues.Add(oTempRec.Fields.Item("ItmsGrpCod").Value, oTempRec.Fields.Item("ItmsGrpNam").Value)
+                oTempRec.MoveNext()
+            Next
+
         Catch ex As Exception
             Throw ex
         End Try

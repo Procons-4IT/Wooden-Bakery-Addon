@@ -36,6 +36,7 @@
                 oApplication.Utilities.AddControls(aForm, "_1001", "1470002292", SAPbouiCOM.BoFormItemTypes.it_STATIC, "DOWN", 6, 6, , "DeliveryDays")
                 oApplication.Utilities.AddControls(aForm, "_1002", "1470002293", SAPbouiCOM.BoFormItemTypes.it_EDIT, "DOWN", 6, 6, "_1001")
 
+
                 oApplication.Utilities.AddControls(aForm, "_1003", "_1001", SAPbouiCOM.BoFormItemTypes.it_STATIC, "DOWN", 6, 6, , "Item Category")
                 oApplication.Utilities.AddControls(aForm, "_1004", "_1002", SAPbouiCOM.BoFormItemTypes.it_EDIT, "DOWN", 6, 6, "_1003")
 
@@ -43,6 +44,9 @@
                 oApplication.Utilities.AddControls(aForm, "_1003", "42", SAPbouiCOM.BoFormItemTypes.it_STATIC, "DOWN", 1, 1, , "Category")
                 oApplication.Utilities.AddControls(aForm, "_1004", "41", SAPbouiCOM.BoFormItemTypes.it_EDIT, "DOWN", 1, 1, "_1003")
 
+            ElseIf aForm.TypeEx = frm_FixedAsset Then
+                oApplication.Utilities.AddControls(aForm, "_1003", "161", SAPbouiCOM.BoFormItemTypes.it_STATIC, "DOWN", 6, 6, , "Item Category")
+                oApplication.Utilities.AddControls(aForm, "_1004", "162", SAPbouiCOM.BoFormItemTypes.it_EDIT, "DOWN", 6, 6, "_1003")
             End If
             '    oApplication.Utilities.AddControls(aForm, "BtnAuto", "2", SAPbouiCOM.BoFormItemTypes.it_BUTTON, "RIGHT", 0, 0, , "Auto Selection(FIFO)", 150)
             ' aForm.Items.Item("16").Enabled = False
@@ -142,6 +146,25 @@
                 oEditText.DataBind.SetBound(True, "OWHS", "U_Z_WHSCODE")
                 oEditText.ChooseFromListUID = "CFL11"
                 oEditText.ChooseFromListAlias = "U_Z_Code"
+            ElseIf objForm.TypeEx = frm_FixedAsset Then
+                
+                oCFLCreationParams.MultiSelection = False
+                oCFLCreationParams.ObjectType = "Z_OITC"
+                oCFLCreationParams.UniqueID = "CFL11"
+                oCFL = oCFLs.Add(oCFLCreationParams)
+                oCons = oCFL.GetConditions()
+                oCon = oCons.Add()
+                oCon.Alias = "U_Z_Active"
+                oCon.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL
+                oCon.CondVal = "Y"
+                oCFL.SetConditions(oCons)
+                oCon = oCons.Add()
+
+                oEditText = oForm.Items.Item("_1004").Specific
+                oEditText.DataBind.SetBound(True, "OITM", "U_Z_ITCCODE")
+                oEditText.ChooseFromListUID = "CFL11"
+                oEditText.ChooseFromListAlias = "U_Z_Code"
+
             End If
         Catch ex As Exception
             MsgBox(ex.Message)
@@ -155,7 +178,7 @@
 #Region "Item Event"
     Public Overrides Sub ItemEvent(ByVal FormUID As String, ByRef pVal As SAPbouiCOM.ItemEvent, ByRef BubbleEvent As Boolean)
         Try
-            If pVal.FormTypeEx = frm_BPMaster Or pVal.FormTypeEx = frm_ItemMaster Or pVal.FormTypeEx = frm_Warehouse Then
+            If pVal.FormTypeEx = frm_BPMaster Or pVal.FormTypeEx = frm_ItemMaster Or pVal.FormTypeEx = frm_Warehouse Or pVal.FormTypeEx = frm_FixedAsset Then
                 Select Case pVal.BeforeAction
                     Case True
                         Select Case pVal.EventType
@@ -248,13 +271,32 @@
 #Region "Menu Event"
     Public Overrides Sub MenuEvent(ByRef pVal As SAPbouiCOM.MenuEvent, ByRef BubbleEvent As Boolean)
         Try
-            Select Case pVal.MenuUID
-                Case "5896"
-                    If pVal.BeforeAction = False Then
-                        'oForm = oApplication.SBO_Application.Forms.ActiveForm()
-                        'AddControls(oForm)
-                    End If
-                Case mnu_FIRST, mnu_LAST, mnu_NEXT, mnu_PREVIOUS
+            Select Case pVal.BeforeAction
+                Case True
+
+                Case False
+                    Select Case pVal.MenuUID
+                        Case mnu_InvSO
+                        Case mnu_FIRST, mnu_LAST, mnu_NEXT, mnu_PREVIOUS
+                        Case mnu_CPRL_I
+                            oForm = oApplication.SBO_Application.Forms.ActiveForm
+                            If oForm.TypeEx.ToString() = frm_ItemMaster Then
+                                If Not oForm.Items.Item("5").Specific.value = "" Then
+                                    Dim objPromList As clsCustPromotionList
+                                    objPromList = New clsCustPromotionList
+                                    objPromList.LoadForm(oForm.Items.Item("5").Specific.value, "I")
+                                Else
+                                    oApplication.Utilities.Message("Select Item to Get Promotion List(Customer)...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                                End If
+                                Dim oMenuItem As SAPbouiCOM.MenuItem
+                                oMenuItem = oApplication.SBO_Application.Menus.Item("1280") 'Data'
+                                If oMenuItem.SubMenus.Exists(pVal.MenuUID) Then
+                                    oApplication.SBO_Application.Menus.RemoveEx(pVal.MenuUID)
+                                End If
+                            End If
+
+
+                    End Select
             End Select
         Catch ex As Exception
             oApplication.Utilities.Message(ex.Message, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
@@ -262,6 +304,53 @@
         End Try
     End Sub
 #End Region
+
+    Public Sub RightClickEvent(ByRef eventInfo As SAPbouiCOM.ContextMenuInfo, ByRef BubbleEvent As Boolean)
+        oForm = oApplication.SBO_Application.Forms.Item(eventInfo.FormUID)
+
+        If oForm.TypeEx = frm_ItemMaster Then
+            If (eventInfo.BeforeAction = True) Then
+                Dim oMenuItem As SAPbouiCOM.MenuItem
+                Dim oMenus As SAPbouiCOM.Menus
+                Try
+                    If oForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
+                        'Promotion List
+                        oMenuItem = oApplication.SBO_Application.Menus.Item("1280") 'Data'
+                        If Not oMenuItem.SubMenus.Exists(mnu_CPRL_I) Then
+                            Dim oCreationPackage As SAPbouiCOM.MenuCreationParams
+                            oCreationPackage = oApplication.SBO_Application.CreateObject(SAPbouiCOM.BoCreatableObjectType.cot_MenuCreationParams)
+                            oCreationPackage.Type = SAPbouiCOM.BoMenuType.mt_STRING
+                            oCreationPackage.UniqueID = mnu_CPRL_I
+                            oCreationPackage.String = "Promotion List(Customer)"
+                            oCreationPackage.Enabled = True
+                            oMenus = oMenuItem.SubMenus
+                            oMenus.AddEx(oCreationPackage)
+                        End If
+
+                    End If
+                Catch ex As Exception
+                    MessageBox.Show(ex.Message)
+                End Try
+            Else
+                Dim oMenuItem As SAPbouiCOM.MenuItem
+                Dim oMenus As SAPbouiCOM.Menus
+                Try
+
+                    If oForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
+                        '  oApplication.SBO_Application.Menus.RemoveEx("TraDetails")
+                    End If
+
+                    oMenuItem = oApplication.SBO_Application.Menus.Item("1280") 'Data'
+                    If oMenuItem.SubMenus.Exists(mnu_CPRL_I) Then
+                        oApplication.SBO_Application.Menus.RemoveEx(mnu_CPRL_I)
+                    End If
+
+                Catch ex As Exception
+                    MessageBox.Show(ex.Message)
+                End Try
+            End If
+        End If
+    End Sub
 
     Public Sub FormDataEvent(ByRef BusinessObjectInfo As SAPbouiCOM.BusinessObjectInfo, ByRef BubbleEvent As Boolean)
         Try

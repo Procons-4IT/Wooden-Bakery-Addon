@@ -32,7 +32,6 @@ Public Module modVariables
     Public strFilepath As String
     Public blnIsHanaDB As Boolean
 
-
     Public Enum ValidationResult As Integer
         CANCEL = 0
         OK = 1
@@ -68,7 +67,9 @@ Public Module modVariables
 
     Public Const frm_APInvoice As String = "141"
     Public Const frm_ARCreditNote As String = "179"
-  
+
+    Public Const mnu_BatchSelection As String = "5896"
+    Public Const mnu_BatchSelection1 As String = "6034"
     Public Const mnu_FIND As String = "1281"
     Public Const mnu_ADD As String = "1282"
     Public Const mnu_CLOSE As String = "1286"
@@ -86,6 +87,8 @@ Public Module modVariables
 
     Public Const mnu_CPRL_O As String = "CPRL_O"
     Public Const mnu_CPRL_C As String = "CPRL_C"
+    Public Const mnu_CPRL_IP As String = "CPRL_CP"
+    Public Const mnu_CPRL_I As String = "CPRL_I"
     Public Const mnu_ICCancel As String = "mnu_ICCancel"
 
     
@@ -193,11 +196,20 @@ Public Module modVariables
     Public Const xml_Z_OCPR As String = "xml_Z_OCPR.xml"
     Public Const mnu_Z_OCPR As String = "W_1019"
 
+    Public Const frm_Z_OCPRS As String = "frm_Z_OCPRS"
+    Public Const xml_Z_OCPRS As String = "xml_Z_OCPRS.xml"
+    Public Const mnu_Z_OCPRS As String = "W_1029"
+
     Public Const frm_Z_CPRL As String = "frm_Z_CPRL"
     Public Const xml_Z_CPRL As String = "xml_Z_CPRL.xml"
 
     Public Const frm_Z_OICT As String = "frm_Z_OICT"
     Public Const xml_Z_OICT As String = "xml_Z_OICT.xml"
     Public Const mnu_Z_OICT As String = "W_1020"
+
+    Public Const frm_Load As String = "frm_Load"
+    Public Const xml_Load As String = "Load.xml"
+
+
 
 End Module

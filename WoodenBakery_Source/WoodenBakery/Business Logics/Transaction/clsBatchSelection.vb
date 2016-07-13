@@ -34,6 +34,8 @@
     End Function
 
 #Region "Assign Serianumbers"
+
+
     Private Sub AssignBatchNumber(ByVal aForm As SAPbouiCOM.Form)
         aForm.Freeze(True)
         Try
@@ -50,9 +52,31 @@
                 strItemCode = oRowsMatrix.Columns.Item("1").Cells.Item(intRow).Specific.value
                 dblSelectedqty = oRowsMatrix.Columns.Item("55").Cells.Item(intRow).Specific.value
                 strwhs = oRowsMatrix.Columns.Item("3").Cells.Item(intRow).Specific.value
+
+                If dblSelectedqty < 0 Then
+                    Dim oSelectedMatrix As SAPbouiCOM.Matrix
+                    oSelectedMatrix = aForm.Items.Item("5").Specific
+                    For intLoop As Integer = oSelectedMatrix.VisualRowCount To 1 Step -1
+                        If oApplication.Utilities.getMatrixValues(oSelectedMatrix, "1", intLoop) <> "" Then
+
+
+                            oSelectedMatrix.Columns.Item("0").Cells.Item(intLoop).Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                            aForm.Items.Item("47").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                        End If
+                    Next
+                    If aForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE Then
+                        aForm.Items.Item("1").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                    End If
+                End If
+
+                oRowsMatrix.Columns.Item("0").Cells.Item(intRow).Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                strItemCode = oRowsMatrix.Columns.Item("1").Cells.Item(intRow).Specific.value
+                dblSelectedqty = oRowsMatrix.Columns.Item("55").Cells.Item(intRow).Specific.value
+                strwhs = oRowsMatrix.Columns.Item("3").Cells.Item(intRow).Specific.value
+
                 If dblSelectedqty > 0 Then
                     strqry = "select ""DistNumber"" FROM OBTQ T0  INNER JOIN OBTN T1 ON T0.""MdAbsEntry"" = T1.""AbsEntry"" INNER JOIN OITM T2 ON "
-                    strqry = strqry & " T0.""ItemCode"" = T2.""ItemCode"" where T2.""ItemCode""='" & strItemCode & "' and  T0.""Quantity"" > 0 order by T1.""SysNumber"" asc "
+                    strqry = strqry & " T0.""ItemCode"" = T2.""ItemCode"" where T2.""ItemCode""='" & strItemCode & "' and  T0.""Quantity"" > 0 order by T1.""ExpDate"" asc "
                     oSerialRec.DoQuery(strqry)
                     Quantity = dblSelectedqty
                     diffQuantity = Quantity
@@ -64,7 +88,7 @@
                                 MatQuantity = oApplication.Utilities.getMatrixValues(oSerialMatrix, "3", intloop1)
                                 If strSerial = MatSerial Then
                                     If diffQuantity > 0 Then
-                                        If diffQuantity > MatQuantity Then
+                                        If diffQuantity >= MatQuantity Then
                                             oApplication.Utilities.SetMatrixValues(oSerialMatrix, "4", intloop1, MatQuantity)
                                             oSerialMatrix.Columns.Item(1).Cells.Item(intloop1).Click(SAPbouiCOM.BoCellClickType.ct_Regular, 0)
                                             diffQuantity = diffQuantity - MatQuantity
@@ -101,11 +125,16 @@
                 End If
             Next
             aForm.Freeze(False)
-            If aForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE Then
-                aForm.Items.Item("1").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
-                '  aForm.Items.Item("1").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
-            ElseIf aForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
-                aForm.Items.Item("1").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+
+            If Not oApplication.ShowBatchSelection Then
+                If aForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE Then
+                    aForm.Items.Item("1").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                    '  aForm.Items.Item("1").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                ElseIf aForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
+                    aForm.Items.Item("1").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                End If
+            Else
+                oApplication.ShowBatchSelection = False
             End If
 
         Catch ex As Exception

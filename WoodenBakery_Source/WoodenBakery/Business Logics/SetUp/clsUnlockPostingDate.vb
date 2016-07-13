@@ -262,41 +262,48 @@
 #End Region
 
     Private Sub RefereshDeleteRow(ByVal aForm As SAPbouiCOM.Form)
-        aForm.Freeze(True)
+        Try
+            aForm.Freeze(True)
 
-        oDataSrc_Line_User = oForm.DataSources.DBDataSources.Item("@Z_LUSR1")
-        If aForm.PaneLevel = 1 Then
             oDataSrc_Line_User = oForm.DataSources.DBDataSources.Item("@Z_LUSR1")
-            frmSourceMatrix = aForm.Items.Item("13").Specific
-        ElseIf aForm.PaneLevel = 2 Then
-            frmSourceMatrix = aForm.Items.Item("17").Specific
-            oDataSrc_Line = oForm.DataSources.DBDataSources.Item("@Z_LUSR2")
-        ElseIf aForm.PaneLevel = 3 Then
-            frmSourceMatrix = aForm.Items.Item("18").Specific
-            oDataSrc_Line = oForm.DataSources.DBDataSources.Item("@Z_LUSR2")
-        Else
-            oDataSrc_Line = oForm.DataSources.DBDataSources.Item("@Z_LUSR4")
-            frmSourceMatrix = aForm.Items.Item("18").Specific
-        End If
-
-        If intSelectedMatrixrow <= 0 Then
-            Exit Sub
-        End If
-        Me.RowtoDelete = intSelectedMatrixrow
-        oDataSrc_Line_User.RemoveRecord(Me.RowtoDelete - 1)
-        oMatrix = frmSourceMatrix
-        oMatrix.FlushToDataSource()
-        For count = 1 To oDataSrc_Line_User.Size - 1
-            oDataSrc_Line_User.SetValue("LineId", count - 1, count)
-        Next
-        oMatrix.LoadFromDataSource()
-        If oMatrix.RowCount > 0 Then
-            oMatrix.DeleteRow(oMatrix.RowCount)
-            If aForm.Mode <> SAPbouiCOM.BoFormMode.fm_ADD_MODE And aForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
-                aForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE
+            If aForm.PaneLevel = 1 Then
+                oDataSrc_Line_User = oForm.DataSources.DBDataSources.Item("@Z_LUSR1")
+                frmSourceMatrix = aForm.Items.Item("13").Specific
+            ElseIf aForm.PaneLevel = 2 Then
+                frmSourceMatrix = aForm.Items.Item("17").Specific
+                oDataSrc_Line = oForm.DataSources.DBDataSources.Item("@Z_LUSR2")
+            ElseIf aForm.PaneLevel = 3 Then
+                frmSourceMatrix = aForm.Items.Item("18").Specific
+                oDataSrc_Line = oForm.DataSources.DBDataSources.Item("@Z_LUSR2")
+            Else
+                oDataSrc_Line = oForm.DataSources.DBDataSources.Item("@Z_LUSR4")
+                frmSourceMatrix = aForm.Items.Item("18").Specific
             End If
-        End If
-        aForm.Freeze(False)
+
+            If intSelectedMatrixrow <= 0 Then
+                Exit Sub
+            End If
+            Me.RowtoDelete = intSelectedMatrixrow
+            oDataSrc_Line_User.RemoveRecord(Me.RowtoDelete - 1)
+            oMatrix = frmSourceMatrix
+            oMatrix.FlushToDataSource()
+            For count = 1 To oDataSrc_Line_User.Size - 1
+                oDataSrc_Line_User.SetValue("LineId", count - 1, count)
+            Next
+            oMatrix.LoadFromDataSource()
+            If oMatrix.RowCount > 0 Then
+                oMatrix.DeleteRow(oMatrix.RowCount)
+                If aForm.Mode <> SAPbouiCOM.BoFormMode.fm_ADD_MODE And aForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
+                    aForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE
+                End If
+            End If
+            aForm.Freeze(False)
+        Catch ex As Exception
+            aForm.Freeze(False)
+        Finally
+            aForm.Freeze(False)
+        End Try
+        
 
     End Sub
 

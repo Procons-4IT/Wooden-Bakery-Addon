@@ -41,7 +41,8 @@
 
       <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="4" String="Promotions" Type="2" UniqueID="W_2104"></Menu>
       <Menu Checked="0" Enabled="1" FatherUID="W_2104" Image="" Position="0" String="Promotion Template" Type="1" UniqueID="W_1018"></Menu>
-      <Menu Checked="0" Enabled="1" FatherUID="W_2104" Image="" Position="1" String="Promotion Mapping" Type="1" UniqueID="W_1019"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2104" Image="" Position="1" String="Promotion Mapping(Customer)" Type="1" UniqueID="W_1019"></Menu>
+      <Menu Checked="0" Enabled="1" FatherUID="W_2104" Image="" Position="2" String="Promotion Mapping(Suplier)" Type="1" UniqueID="W_1029"></Menu>
 
       <Menu Checked="0" Enabled="1" FatherUID="W_1100" Image="" Position="5" String="Inventory Count" Type="2" UniqueID="W_2105"></Menu>
       <Menu Checked="0" Enabled="1" FatherUID="W_2105" Image="" Position="0" String="Inventory Count" Type="1" UniqueID="W_1020"></Menu>

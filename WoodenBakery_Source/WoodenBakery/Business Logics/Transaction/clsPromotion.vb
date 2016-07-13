@@ -170,13 +170,27 @@ Public Class clsPromotion
                                                 oDBDataSourceLines.SetValue("U_Z_ItmCode", pVal.Row + index - 1, oDataTable.GetValue("ItemCode", index))
                                                 oDBDataSourceLines.SetValue("U_Z_ItmName", pVal.Row + index - 1, oDataTable.GetValue("ItemName", index))
                                                 oDBDataSourceLines.SetValue("U_Z_Qty", pVal.Row + index - 1, "1")
-                                                Dim strUOM As String = " Select ""UomCode"" From OUOM Where ""UomEntry"" = '" & oDataTable.GetValue("UgpEntry", index) & "'"
-                                                Dim oUOMRS As SAPbobsCOM.Recordset
-                                                oUOMRS = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-                                                oUOMRS.DoQuery(strUOM)
-                                                If Not oUOMRS.EoF Then
-                                                    oDBDataSourceLines.SetValue("U_Z_UOMGroup", pVal.Row + index - 1, oUOMRS.Fields.Item(0).Value)
+                                                Dim strUOM As String
+                                                If oDataTable.GetValue("UgpEntry", index) <> "-1" Then
+                                                    strUOM = " Select ""UomCode"" From OUGP Where ""UgpEntry"" = '" & oDataTable.GetValue("UgpEntry", index) & "'"
+                                                Else
+                                                    strUOM = " Select ""UomCode"" From OUOM Where ""UomCode"" = '" & oDataTable.GetValue("SalUnitMsr", index) & "'"
                                                 End If
+                                                oDBDataSourceLines.SetValue("U_Z_UOMGROUP", pVal.Row + index - 1, oDataTable.GetValue("SalUnitMsr", index))
+                                                ''  SUoMEntry()
+                                                ''strUOM = " SELECT  T2.""UomEntry"" as ""UomEntry"", T3.""UomCode"" as ""UomCode"" FROM OITM T0 INNER JOIN OUGP T1 ON T0.""UgpEntry"" = T1.""UgpEntry"" "
+                                                ''strUOM += " INNER JOIN UGP1 T2 ON T1.""UgpEntry"" = T2.""UgpEntry"" INNER JOIN OUOM T3 ON T3.""UomEntry"" = T2.""UomEntry"" "
+                                                ''strUOM += " Where T0.""ItemCode"" = '" & oDataTable.GetValue("ItemCode", index) & "' "
+                                                'strUOM = " SELECT  T2.""UomEntry"" as ""UomEntry"", T3.""UomCode"" as ""UomCode"" FROM OITM T0 INNER JOIN OUGP T1 ON T0.""SUoMEntry"" = T1.""UgpEntry"" "
+                                                'strUOM += " INNER JOIN UGP1 T2 ON T1.""UgpEntry"" = T2.""UgpEntry"" INNER JOIN OUOM T3 ON T3.""UomEntry"" = T2.""UomEntry"" "
+                                                'strUOM += " Where T0.""ItemCode"" = '" & oDataTable.GetValue("ItemCode", index) & "' "
+
+                                                'Dim oUOMRS As SAPbobsCOM.Recordset
+                                                'oUOMRS = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+                                                'oUOMRS.DoQuery(strUOM)
+                                                'If Not oUOMRS.EoF Then
+                                                '    oDBDataSourceLines.SetValue("U_Z_UOMGroup", pVal.Row + index - 1, oUOMRS.Fields.Item(1).Value)
+                                                'End If
                                             Next
                                             oMatrix.LoadFromDataSource()
                                             If oForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then oForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE
@@ -197,10 +211,18 @@ Public Class clsPromotion
                                                 Dim strUOM As String = " Select ""UomCode"" From OUOM Where ""UomEntry"" = '" & oDataTable.GetValue("UgpEntry", index) & "'"
                                                 Dim oUOMRS As SAPbobsCOM.Recordset
                                                 oUOMRS = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-                                                oUOMRS.DoQuery(strUOM)
-                                                If Not oUOMRS.EoF Then
-                                                    oDBDataSourceLines.SetValue("U_Z_OUOMGroup", pVal.Row + index - 1, oUOMRS.Fields.Item(0).Value)
-                                                End If
+                                                oDBDataSourceLines.SetValue("U_Z_OUOMGroup", pVal.Row + index - 1, oDataTable.GetValue("SalUnitMsr", index))
+
+
+                                                'strUOM = " SELECT  T2.""UomEntry"" as ""UomEntry"", T3.""UomCode"" as ""UomCode"" FROM OITM T0 INNER JOIN OUGP T1 ON T0.""UgpEntry"" = T1.""UgpEntry"" "
+                                                'strUOM += " INNER JOIN UGP1 T2 ON T1.""UgpEntry"" = T2.""UgpEntry"" INNER JOIN OUOM T3 ON T3.""UomEntry"" = T2.""UomEntry"" "
+                                                'strUOM += " Where T0.""ItemCode"" = '" & oDataTable.GetValue("ItemCode", index) & "' "
+
+
+                                                'oUOMRS.DoQuery(strUOM)
+                                                'If Not oUOMRS.EoF Then
+                                                '    oDBDataSourceLines.SetValue("U_Z_OUOMGroup", pVal.Row + index - 1, oUOMRS.Fields.Item(1).Value)
+                                                'End If
                                             Next
                                             oMatrix.LoadFromDataSource()
                                             If oForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then oForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE
@@ -341,6 +363,24 @@ Public Class clsPromotion
                             If pVal.BeforeAction = False Then
 
                             End If
+                        Case mnu_CPRL_IP
+                            oForm = oApplication.SBO_Application.Forms.ActiveForm
+                            If oForm.TypeEx.ToString() = frm_Z_OPRM Then
+                                If Not oForm.Items.Item("13").Specific.value = "" Then
+                                    Dim objPromList As clsCustPromotionList
+                                    objPromList = New clsCustPromotionList
+                                    objPromList.LoadForm(oForm.Items.Item("13").Specific.value, "P")
+                                Else
+                                    oApplication.Utilities.Message("Select Item to Get Promotion List(Customer)...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                                End If
+                                Dim oMenuItem As SAPbouiCOM.MenuItem
+                                oMenuItem = oApplication.SBO_Application.Menus.Item("1280") 'Data'
+                                If oMenuItem.SubMenus.Exists(pVal.MenuUID) Then
+                                    oApplication.SBO_Application.Menus.RemoveEx(pVal.MenuUID)
+                                End If
+                            End If
+
+
                     End Select
             End Select
             
@@ -377,6 +417,46 @@ Public Class clsPromotion
             oForm = oApplication.SBO_Application.Forms.Item(eventInfo.FormUID)
             If oForm.TypeEx = frm_Z_OPRM Then
                 intSelectedMatrixrow = eventInfo.Row
+                If (eventInfo.BeforeAction = True) Then
+                    Dim oMenuItem As SAPbouiCOM.MenuItem
+                    Dim oMenus As SAPbouiCOM.Menus
+                    Try
+                        If oForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
+                            'Promotion List
+                            oMenuItem = oApplication.SBO_Application.Menus.Item("1280") 'Data'
+                            If Not oMenuItem.SubMenus.Exists(mnu_CPRL_IP) Then
+                                Dim oCreationPackage As SAPbouiCOM.MenuCreationParams
+                                oCreationPackage = oApplication.SBO_Application.CreateObject(SAPbouiCOM.BoCreatableObjectType.cot_MenuCreationParams)
+                                oCreationPackage.Type = SAPbouiCOM.BoMenuType.mt_STRING
+                                oCreationPackage.UniqueID = mnu_CPRL_IP
+                                oCreationPackage.String = "Promotion List(Customer)"
+                                oCreationPackage.Enabled = True
+                                oMenus = oMenuItem.SubMenus
+                                oMenus.AddEx(oCreationPackage)
+                            End If
+
+                        End If
+                    Catch ex As Exception
+                        MessageBox.Show(ex.Message)
+                    End Try
+                Else
+                    Dim oMenuItem As SAPbouiCOM.MenuItem
+                    Dim oMenus As SAPbouiCOM.Menus
+                    Try
+
+                        If oForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE Then
+                            '  oApplication.SBO_Application.Menus.RemoveEx("TraDetails")
+                        End If
+
+                        oMenuItem = oApplication.SBO_Application.Menus.Item("1280") 'Data'
+                        If oMenuItem.SubMenus.Exists(mnu_CPRL_IP) Then
+                            oApplication.SBO_Application.Menus.RemoveEx(mnu_CPRL_IP)
+                        End If
+
+                    Catch ex As Exception
+                        MessageBox.Show(ex.Message)
+                    End Try
+                End If
             End If
         Catch ex As Exception
             oApplication.Utilities.Message(ex.Message, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
@@ -557,40 +637,67 @@ Public Class clsPromotion
             'End If
 
             oMatrix = oForm.Items.Item("3").Specific
-            For index As Integer = 1 To oMatrix.VisualRowCount
-                Dim strItemCode As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_0", index)
-                Dim strDisType As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_8", index)
-                Dim strDiscount As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_9", index)
-                Dim dblDiscount As Double
+            If oMatrix.RowCount <= 0 Then
+                oApplication.Utilities.Message("Line Details Missing....", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                Return False
+            Else
+                If oApplication.Utilities.getMatrixValues(oMatrix, "V_0", 1) = "" Then
+                    oApplication.Utilities.Message("Line Details Missing....", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                    Return False
+                End If
 
-                If strDisType = "D" Then
-                    If Double.TryParse(strDiscount, dblDiscount) Then
-                        If dblDiscount = 0 Then
-                            oApplication.Utilities.Message("Enter Discount for Row No " & index.ToString, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+
+                End If
+                For index As Integer = 1 To oMatrix.VisualRowCount
+                    Dim strItemCode As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_0", index)
+                    Dim strDisType As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_8", index)
+                    Dim strDiscount As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_9", index)
+                    Dim dblDiscount As Double
+
+                    If strDisType = "D" Then
+                        If Double.TryParse(strDiscount, dblDiscount) Then
+                            If dblDiscount = 0 Then
+                                oApplication.Utilities.Message("Enter Discount for Row No " & index.ToString, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                                Return False
+                            End If
+                            If strItemCode = "" Then
+                                oApplication.Utilities.Message("Item Code is missing... Row No : " & index.ToString, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                                Return False
+                            End If
+                        End If
+                    ElseIf strDisType = "I" Then
+                        Dim strOItemCode As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_3", index)
+                        If strItemCode.Length > 0 And strOItemCode.Trim() = "" Then
+                            oApplication.Utilities.Message("Enter Offer Item for Row No " & index.ToString, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
                             Return False
                         End If
                     End If
-                ElseIf strDisType = "I" Then
-                    Dim strOItemCode As String = oApplication.Utilities.getMatrixValues(oMatrix, "V_3", index)
-                    If strItemCode.Length > 0 And strOItemCode.Trim() = "" Then
-                        oApplication.Utilities.Message("Enter Offer Item for Row No " & index.ToString, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                Next
+
+                oRecordSet = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+
+                If aForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE Then
+                    strQuery = "Select 1 As ""Return"",""DocEntry"" From ""@Z_OPRM"" "
+                    strQuery += " Where "
+                    strQuery += " ""U_Z_PrCode"" = '" + oDBDataSource.GetValue("U_Z_PrCode", 0).Trim() + "' And ""DocEntry"" <> '" + oDBDataSource.GetValue("DocEntry", 0).ToString() + "'"
+                    oRecordSet.DoQuery(strQuery)
+                    If Not oRecordSet.EoF Then
+                        oApplication.Utilities.Message("Promotion Code Already Exist...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                        Return False
+                    End If
+                ElseIf aForm.Mode = SAPbouiCOM.BoFormMode.fm_ADD_MODE Then
+                    strQuery = "Select 1 As ""Return"",""DocEntry"" From ""@Z_OPRM"" "
+                    strQuery += " Where "
+                    strQuery += " ""U_Z_PrCode"" = '" & oDBDataSource.GetValue("U_Z_PrCode", 0).Trim() & "'"
+                    oRecordSet.DoQuery(strQuery)
+                    If Not oRecordSet.EoF Then
+                        oApplication.Utilities.Message("Promotion Code Already Exist...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
                         Return False
                     End If
                 End If
-            Next
 
-            oRecordSet = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-            strQuery = "Select 1 As ""Return"",""DocEntry"" From ""@Z_OPRM "" "
-            strQuery += " Where "
-            strQuery += " ""U_Z_PrCode"" = '" + oDBDataSource.GetValue("U_Z_PrCode", 0).Trim() + "' And ""DocEntry"" <> '" + oDBDataSource.GetValue("DocEntry", 0).ToString() + "'"
-            oRecordSet.DoQuery(strQuery)
 
-            If Not oRecordSet.EoF Then
-                oApplication.Utilities.Message("Promotion Code Already Exist...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
-                Return False
-            End If
-
-            Return True
+                Return True
         Catch ex As Exception
             aForm.Freeze(False)
             Throw ex

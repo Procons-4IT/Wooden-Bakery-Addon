@@ -1,0 +1,2 @@
+﻿DocType	DocumentNumber	CustomerCode	CustomerName	LineNum	ItemCode	ItemDesc	Quantity	Remakrs
+Sales Order	119	16100003	C0001	Fadil Medlej	0	S-3001001001	Pita White Big (Bag*8 Loaves 1000 Grs)	Closed Successfully	

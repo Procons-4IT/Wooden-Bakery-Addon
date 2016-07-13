@@ -13,6 +13,7 @@
     Private dtValidFrom, dtValidTo As Date
     Private strQuery As String
     Private oCombo As SAPbouiCOM.ComboBox
+    Private oLoadForm As SAPbouiCOM.Form
 
     Public Sub New()
         MyBase.New()
@@ -76,22 +77,30 @@
                                             End If
                                         End If
                                     End If
-                                ElseIf pVal.ItemUID = "9" Then
-                                    'If oForm.Mode <> SAPbouiCOM.BoFormMode.fm_OK_MODE Then
-                                    '    oApplication.Utilities.Message("This action support only in OK Mode", SAPbouiCOM.BoStatusBarMessageType.smt_Warning)
-                                    '    Exit Sub
-                                    'End If
-
-                                    'Dim _retVal As Integer = oApplication.SBO_Application.MessageBox("Wish to create the Inventory Count ?", 2, "Continue", "Cancel", "")
-                                    'If _retVal = 2 Then
-                                    '    Exit Sub
-                                    'End If
-                                    'Dim strDocEntry As String = oApplication.Utilities.getEdittextvalue(oForm, "6_")
-                                    'If (oApplication.Utilities.CreateInventoryCountDocument(oForm, strDocEntry)) Then
-                                    '    oApplication.SBO_Application.MessageBox("Sales Order Created Successfully...")
-                                    '    oApplication.SBO_Application.Menus.Item(mnu_ADD).Activate()
-                                    'End If
-
+                                ElseIf pVal.ItemUID = "13" Then 'Browse
+                                    oApplication.Utilities.OpenFileDialogBox(oForm, "15")
+                                ElseIf (pVal.ItemUID = "14") Then 'Import
+                                    If CType(oForm.Items.Item("15").Specific, SAPbouiCOM.StaticText).Caption <> "" Then
+                                        If oApplication.Utilities.ValidateFile(oForm, "15") Then
+                                            oMatrix = oForm.Items.Item("3").Specific
+                                            oDBDataSourceLines = oForm.DataSources.DBDataSources.Item("@Z_ICT1")
+                                            'oLoadForm = Nothing
+                                            'oLoadForm = oApplication.Utilities.LoadMessageForm(xml_Load, frm_Load)
+                                            'oLoadForm = oApplication.SBO_Application.Forms.ActiveForm()
+                                            'oLoadForm.Items.Item("3").TextStyle = 4
+                                            'oLoadForm.Items.Item("4").TextStyle = 5
+                                            'CType(oLoadForm.Items.Item("3").Specific, SAPbouiCOM.StaticText).Caption = "PLEASE WAIT..."
+                                            'CType(oLoadForm.Items.Item("4").Specific, SAPbouiCOM.StaticText).Caption = "Importing..."
+                                            If oApplication.Utilities.GetData(oForm, oLoadForm, "15", oMatrix, oDBDataSourceLines) Then
+                                                oApplication.Utilities.Message("Inventory Data Imported Successfully....", SAPbouiCOM.BoStatusBarMessageType.smt_Success)
+                                            Else
+                                                BubbleEvent = False
+                                            End If
+                                        End If
+                                    Else
+                                        oApplication.Utilities.Message("Select File to Import....", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                                        BubbleEvent = False
+                                    End If
                                 End If
                             Case SAPbouiCOM.BoEventTypes.et_CLICK
                                 oForm = oApplication.SBO_Application.Forms.Item(FormUID)

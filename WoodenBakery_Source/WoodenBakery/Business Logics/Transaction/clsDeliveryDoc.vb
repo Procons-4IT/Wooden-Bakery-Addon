@@ -30,6 +30,15 @@
         oForm = oApplication.SBO_Application.Forms.ActiveForm()
         oForm.Freeze(True)
         oForm.DataBrowser.BrowseBy = "4"
+        oForm.Items.Item("6").Enabled = True
+        oForm.Items.Item("6").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+        oApplication.Utilities.setEdittextvalue(oForm, "6", "t")
+        oApplication.SBO_Application.SendKeys("{TAB}")
+        oForm.Items.Item("8").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+        oApplication.Utilities.setEdittextvalue(oForm, "8", "t")
+        oApplication.SBO_Application.SendKeys("{TAB}")
+        oForm.Items.Item("10").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+        oForm.Items.Item("6").Enabled = False
         oForm.EnableMenu(mnu_DELETE_ROW, True)
         oForm.Items.Item("4").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
         oForm.Mode = SAPbouiCOM.BoFormMode.fm_ADD_MODE
@@ -75,6 +84,7 @@
                             oForm.Items.Item("1").Enabled = True
                             oForm.Items.Item("11").Enabled = True
                             oForm.Items.Item("14").Enabled = True
+
                             oForm.Items.Item("4").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
                         Case mnu_FIND
                             oForm = oApplication.SBO_Application.Forms.ActiveForm()
@@ -130,19 +140,37 @@
                                             strDocNum = strScanedBarcode.Substring(2, strScanedBarcode.Length - 2)
                                             Select Case strScanedBarcode.Substring(0, 2)
                                                 Case "13"
-                                                    strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From OINV where ""DocNum""='" & strDocNum & "'"
+                                                    If blnIsHanaDB = True Then
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From OINV where ifnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+
+                                                    Else
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From OINV where isnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+
+                                                    End If
                                                     strDocType = "Invoice"
                                                     strTable = "OINV"
                                                 Case "14"
-                                                    strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From ORIN where ""DocNum""='" & strDocNum & "'"
+                                                    If blnIsHanaDB = True Then
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From ORIN where ifnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+                                                    Else
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From ORIN where isnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+                                                    End If
                                                     strDocType = "Credit Note"
                                                     strTable = "ORIN"
                                                 Case "24"
-                                                    strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From ORCT where ""DocNum""='" & strDocNum & "'"
+                                                    If blnIsHanaDB = True Then
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From ORCT where ifnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+                                                    Else
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From ORCT where isnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+                                                    End If
                                                     strDocType = "Incoming Payment"
                                                     strTable = "ORCT"
                                                 Case "46"
-                                                    strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From OVPM where ""DocNum""='" & strDocNum & "'"
+                                                    If blnIsHanaDB = True Then
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From OVPM where ifnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+                                                    Else
+                                                        strQuery = "Select ""DocEntry"", ""DocNum"", ""CardCode"", ""CardName"",""DocDate"" From OVPM where isnull(""U_Z_IsDel"",'N')='N' and  ""DocNum""='" & strDocNum & "'"
+                                                    End If
                                                     strDocType = "Vendor Payment"
                                                     strTable = "OVPM"
                                             End Select
@@ -164,14 +192,24 @@
                                                 oApplication.Utilities.SetMatrixValues(oMatrix, "V_7", oMatrix.RowCount, strTable)
                                                 oApplication.Utilities.setEdittextvalue(oForm, "10", "")
                                             Else
-                                                oApplication.SBO_Application.MessageBox("Scanned document does not exists")
+                                                oApplication.SBO_Application.MessageBox("Scanned document does not exists or already Scanned")
                                                 oApplication.Utilities.setEdittextvalue(oForm, "10", "")
+                                                oForm.Items.Item("10").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                                                BubbleEvent = False
+                                                Exit Sub
+
                                             End If
-                                        Else
+                                        ElseIf strScanedBarcode.Length > 0 Then
                                             oApplication.SBO_Application.MessageBox("Scanned document does not support in this module")
                                             oApplication.Utilities.setEdittextvalue(oForm, "10", "")
+                                            oForm.Items.Item("10").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                                            BubbleEvent = False
+                                            Exit Sub
                                         End If
                                         oForm.Items.Item("10").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+                                        oApplication.Utilities.setEdittextvalue(oForm, "10", "")
+                                        BubbleEvent = False
+                                        Exit Sub
                                     End If
 
                                 End If
@@ -233,6 +271,8 @@
     Private Sub initialize(ByVal oForm As SAPbouiCOM.Form)
         Try
             alldataSource(oForm)
+            oForm.Items.Item("4").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 1, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
+            oForm.Items.Item("6").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 1, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
             oMatrix = oForm.Items.Item("11").Specific
             oMatrix.LoadFromDataSource()
             oMatrix.AddRow(1, -1)
@@ -240,7 +280,16 @@
             oMatrix.SelectionMode = SAPbouiCOM.BoMatrixSelect.ms_Single
             Dim strCode As String = oApplication.Utilities.getMaxCode("@Z_ODEL", "DocEntry")
             oApplication.Utilities.setEdittextvalue(oForm, "4", strCode)
-            oApplication.Utilities.setEdittextvalue(oForm, "6", System.DateTime.Now.ToString("yyyyMMdd"))
+            'oApplication.Utilities.setEdittextvalue(oForm, "6", System.DateTime.Now.ToString("yyyyMMdd"))
+            oForm.Items.Item("6").Enabled = True
+            oForm.Items.Item("6").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+            oApplication.Utilities.setEdittextvalue(oForm, "6", "t")
+            oApplication.SBO_Application.SendKeys("{TAB}")
+            oForm.Items.Item("8").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+            oApplication.Utilities.setEdittextvalue(oForm, "8", "t")
+            oApplication.SBO_Application.SendKeys("{TAB}")
+            oForm.Items.Item("10").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
+            oForm.Items.Item("6").Enabled = False
             oMatrix.AutoResizeColumns()
             oForm.Update()
         Catch ex As Exception
@@ -296,9 +345,15 @@
 
     Private Function Validation(ByVal aForm As SAPbouiCOM.Form) As Boolean
         If aForm.Mode = SAPbouiCOM.BoFormMode.fm_ADD_MODE Then
-            If oApplication.Utilities.getEdittextvalue(aForm, "8") = "" Then
-                oApplication.Utilities.Message("Delivery Date is missing....", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+            oMatrix = aForm.Items.Item("11").Specific
+            If oMatrix.RowCount <= 0 Then
+                oApplication.Utilities.Message("Line details missing...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
                 Return False
+            Else
+                If oApplication.Utilities.getMatrixValues(oMatrix, "V_5", 1) = "" Then
+                    oApplication.Utilities.Message("Line details missing...", SAPbouiCOM.BoStatusBarMessageType.smt_Error)
+                    Return False
+                End If
             End If
         End If
         Return True
@@ -327,6 +382,7 @@
                                 oForm.Items.Item("1").Enabled = False
                                 oForm.Items.Item("11").Enabled = False
                                 oForm.Items.Item("14").Enabled = False
+                                oForm.Items.Item("8").Enabled = False
 
                             End If
                         Case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD
@@ -338,21 +394,24 @@
                                 oXmlDoc.LoadXml(BusinessObjectInfo.ObjectKey)
                                 Dim DocEntry As String = oXmlDoc.SelectSingleNode("/Delivery_DocumentParams/DocEntry").InnerText
                                 Try
+
+                                    '  Delivery_Document
                                     Dim oURecordSet As SAPbobsCOM.Recordset
                                     oURecordSet = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
 
-                                    Dim strQuery As String = "Select T0.""DocEntry"",T1.""U_Z_DelDate"",T0.""U_Z_DocEntry"",T0.""U_Z_TarTable"" From ""@Z_DEL1"" T0 JOIN ""@Z_ODEL"" T1 On T1.""DocEntry"" = T0.""DocEntry"" Where T0.""DocEntry"" = '" & DocEntry & "'"
+                                    Dim strQuery As String = "Select T0.""DocEntry"",T1.""U_Z_DelDate"",T0.""U_Z_DocEntry"",T0.""U_Z_TarTable"",T1.""U_Z_DocDate"" From ""@Z_DEL1"" T0 JOIN ""@Z_ODEL"" T1 On T1.""DocEntry"" = T0.""DocEntry"" Where T0.""DocEntry"" = '" & DocEntry & "'"
                                     oRecordSet = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
                                     oRecordSet.DoQuery(strQuery)
                                     If Not oRecordSet.EoF Then
                                         While Not oRecordSet.EoF
                                             'MessageBox.Show(oRecordSet.Fields.Item("U_Z_DocEntry").Value)
                                             strTable = oRecordSet.Fields.Item("U_Z_TarTable").Value
-                                            Dim dtDelDate As Date = oRecordSet.Fields.Item("U_Z_DelDate").Value
-                                            ' strQuery = "Update OINV Set ""U_Z_DelDate""='" & dtDelDate.ToString("yyyy-MM-dd") & "' , ""U_Z_IsDel""='Y' , ""U_Z_DelRef""='" & oRecordSet.Fields.Item("DocEntry").Value & "' Where ""DocEntry"" = '" & oRecordSet.Fields.Item("U_Z_DocEntry").Value & "'"
-                                            strQuery = "Update " & strTable & " Set ""U_Z_DelDate""='" & dtDelDate.ToString("yyyy-MM-dd") & "' , ""U_Z_IsDel""='Y' , ""U_Z_DelRef""='" & oRecordSet.Fields.Item("DocEntry").Value & "' Where ""DocEntry"" = '" & oRecordSet.Fields.Item("U_Z_DocEntry").Value & "'"
-                                            oURecordSet.DoQuery(strQuery)
-
+                                            Dim dtDelDate As Date = oRecordSet.Fields.Item("U_Z_DocDate").Value
+                                            If strTable <> "" Then
+                                                ' strQuery = "Update OINV Set ""U_Z_DelDate""='" & dtDelDate.ToString("yyyy-MM-dd") & "' , ""U_Z_IsDel""='Y' , ""U_Z_DelRef""='" & oRecordSet.Fields.Item("DocEntry").Value & "' Where ""DocEntry"" = '" & oRecordSet.Fields.Item("U_Z_DocEntry").Value & "'"
+                                                strQuery = "Update " & strTable & " Set ""U_Z_DelDate""='" & dtDelDate.ToString("yyyy-MM-dd") & "' , ""U_Z_ScnUser""='" & oApplication.Company.UserName & "', ""U_Z_IsDel""='Y' , ""U_Z_DelRef""='" & oRecordSet.Fields.Item("DocEntry").Value & "' Where ""DocEntry"" = '" & oRecordSet.Fields.Item("U_Z_DocEntry").Value & "'"
+                                                oURecordSet.DoQuery(strQuery)
+                                            End If
                                             oRecordSet.MoveNext()
                                         End While
                                     End If

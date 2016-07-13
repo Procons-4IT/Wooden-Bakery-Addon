@@ -14,6 +14,7 @@ Public Class clsListener
     Private oSystemForms As Object
     Dim objFilters As SAPbouiCOM.EventFilters
     Dim objFilter As SAPbouiCOM.EventFilter
+    Private _blnShowBatchSelection As Boolean = False
 
 #Region "New"
     Public Sub New()
@@ -75,6 +76,15 @@ Public Class clsListener
         Get
             Return _AppProcedure
         End Get
+    End Property
+
+    Public Property ShowBatchSelection() As Boolean
+        Get
+            Return _blnShowBatchSelection
+        End Get
+        Set(value As Boolean)
+            _blnShowBatchSelection = value
+        End Set
     End Property
 
 #Region "Filter"
@@ -176,7 +186,7 @@ Public Class clsListener
                 objIncDoc = New clsInventoryCount
                 objIncDoc.FormDataEvent(BusinessObjectInfo, BubbleEvent)
 
-            Case frm_BPMaster, frm_ItemMaster, frm_Warehouse
+            Case frm_BPMaster, frm_ItemMaster, frm_Warehouse, frm_FixedAsset
                 Dim objInvoice As clsMasters
                 objInvoice = New clsMasters
                 objInvoice.FormDataEvent(BusinessObjectInfo, BubbleEvent)
@@ -252,12 +262,16 @@ Public Class clsListener
                         oMenuObject = New clsDeliveryDocReport
                         oMenuObject.MenuEvent(pVal, BubbleEvent)
 
-                    Case mnu_Z_OPRM
+                    Case mnu_Z_OPRM, mnu_CPRL_IP
                         oMenuObject = New clsPromotion
                         oMenuObject.MenuEvent(pVal, BubbleEvent)
 
                     Case mnu_Z_OCPR
                         oMenuObject = New clsPromotionMapping
+                        oMenuObject.MenuEvent(pVal, BubbleEvent)
+
+                    Case mnu_Z_OCPRS
+                        oMenuObject = New clsPromotionMappingSupplier
                         oMenuObject.MenuEvent(pVal, BubbleEvent)
 
                     Case mnu_Z_OICT
@@ -278,11 +292,30 @@ Public Class clsListener
                     Case mnu_CPRL_C
                         oMenuObject = New clsBusinessPartner
                         oMenuObject.MenuEvent(pVal, BubbleEvent)
+                        'Case mnu_BatchSelection, mnu_BatchSelection1
+                        '    Try
+                        '        oApplication.ShowBatchSelection = True
+                        '        'oApplication._SBO_Application.ActivateMenuItem(mnu_BatchSelection)
+                        '    Catch ex As Exception
 
+                        '    End Try
+                    Case mnu_CPRL_O
+                        oMenuObject = New clsDocuments
+                        oMenuObject.MenuEvent(pVal, BubbleEvent)
+                    Case mnu_CPRL_I
+                        oMenuObject = New clsMasters
+                        oMenuObject.MenuEvent(pVal, BubbleEvent)
                 End Select
 
             Else
                 Select Case pVal.MenuUID
+                    Case mnu_BatchSelection, mnu_BatchSelection1
+                        Try
+                            oApplication.ShowBatchSelection = True
+                            'oApplication._SBO_Application.ActivateMenuItem(mnu_BatchSelection)
+                        Catch ex As Exception
+
+                        End Try
                     Case mnu_PaymentMeans
                         frm_InvoiceForm = oApplication.SBO_Application.Forms.ActiveForm()
 
@@ -291,7 +324,7 @@ Public Class clsListener
                             oMenuObject = _Collection.Item(_FormUID)
                             oMenuObject.MenuEvent(pVal, BubbleEvent)
                         End If
-                    Case mnu_ADD, mnu_FIND, mnu_FIRST, mnu_LAST, mnu_NEXT, mnu_PREVIOUS, mnu_ADD_ROW, mnu_DELETE_ROW, mnu_Cancel, mnu_CPRL_O
+                    Case mnu_ADD, mnu_FIND, mnu_FIRST, mnu_LAST, mnu_NEXT, mnu_PREVIOUS, mnu_ADD_ROW, mnu_DELETE_ROW, mnu_Cancel, mnu_CPRL_O, mnu_CPRL_I
                         If _Collection.ContainsKey(_FormUID) Then
                             oMenuObject = _Collection.Item(_FormUID)
                             oMenuObject.MenuEvent(pVal, BubbleEvent)
@@ -361,7 +394,6 @@ Public Class clsListener
                         Dim strCFLID As String = ""
                         Try
                             If oform.TypeEx <> "0" And pVal.ItemUID <> "" Then
-
                                 OItem = oform.Items.Item(pVal.ItemUID)
                                 If OItem.Type = SAPbouiCOM.BoFormItemTypes.it_MATRIX Then
                                     oMatrix = OItem.Specific
@@ -371,7 +403,6 @@ Public Class clsListener
                                     strCFLID = oEdittext.ChooseFromListUID
                                 End If
                                 oApplication.Utilities.filterProjectChooseFromList(oform, strCFLID)
-
                             End If
                         Catch ex As Exception
                             oApplication.Utilities.Message(ex.Message, SAPbouiCOM.BoStatusBarMessageType.smt_Error)
@@ -379,17 +410,19 @@ Public Class clsListener
                 End Select
                 If oform.TypeEx = frm_FixedAsset Then
                     If pVal.ItemUID = "1470002156" Or pVal.ItemUID = "1470002158" Then
-                        If pVal.EventType = SAPbouiCOM.BoEventTypes.et_CLICK Then
-                            BubbleEvent = False
-                            Exit Sub
-                        End If
-                        If pVal.EventType = SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED Then
-                            BubbleEvent = False
-                            Exit Sub
-                        End If
-                        If pVal.EventType = SAPbouiCOM.BoEventTypes.et_PICKER_CLICKED Then
-                            BubbleEvent = False
-                            Exit Sub
+                        If oform.Mode <> SAPbouiCOM.BoFormMode.fm_ADD_MODE Then
+                            If pVal.EventType = SAPbouiCOM.BoEventTypes.et_CLICK Then
+                                BubbleEvent = False
+                                Exit Sub
+                            End If
+                            If pVal.EventType = SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED Then
+                                BubbleEvent = False
+                                Exit Sub
+                            End If
+                            If pVal.EventType = SAPbouiCOM.BoEventTypes.et_PICKER_CLICKED Then
+                                BubbleEvent = False
+                                Exit Sub
+                            End If
                         End If
                     End If
                 End If
@@ -401,16 +434,34 @@ Public Class clsListener
                         End If
                     End If
                 End If
-
-
+                If pVal.FormTypeEx = "60092" Or pVal.FormTypeEx = "141" Or pVal.FormTypeEx = "143" Then
+                    Dim oMatrix As SAPbouiCOM.Matrix
+                    Select Case pVal.EventType
+                        Case SAPbouiCOM.BoEventTypes.et_CLICK
+                            oform = oApplication.SBO_Application.Forms.Item(FormUID)
+                            If pVal.ItemUID = "38" And pVal.ColUID = "14" Then
+                                oMatrix = oform.Items.Item(pVal.ItemUID).Specific
+                                If oApplication.Utilities.ValidateItemIdentifier(oApplication.Utilities.getMatrixValues(oMatrix, "1", pVal.Row)) = False Then
+                                    BubbleEvent = False
+                                    Exit Sub
+                                End If
+                            End If
+                        Case SAPbouiCOM.BoEventTypes.et_KEY_DOWN
+                            oform = oApplication.SBO_Application.Forms.Item(FormUID)
+                            If pVal.ItemUID = "38" And pVal.ColUID = "14" And pVal.CharPressed <> 9 Then
+                                oMatrix = oform.Items.Item(pVal.ItemUID).Specific
+                                If oApplication.Utilities.ValidateItemIdentifier(oApplication.Utilities.getMatrixValues(oMatrix, "1", pVal.Row)) = False Then
+                                    BubbleEvent = False
+                                    Exit Sub
+                                End If
+                            End If
+                    End Select
+                End If
             End If
-
-
             If pVal.EventType <> SAPbouiCOM.BoEventTypes.et_FORM_UNLOAD Then
                 Select Case pVal.FormType
                 End Select
             End If
-
             If pVal.EventType <> SAPbouiCOM.BoEventTypes.et_FORM_UNLOAD Then
                 Select Case pVal.FormTypeEx
                     Case frm_Rebate
@@ -419,21 +470,18 @@ Public Class clsListener
                             oItemObject.FrmUID = FormUID
                             _Collection.Add(FormUID, oItemObject)
                         End If
-
                     Case frm_ItemCagetory
                         If Not _Collection.ContainsKey(FormUID) Then
                             oItemObject = New clsItemCategory
                             oItemObject.FrmUID = FormUID
                             _Collection.Add(FormUID, oItemObject)
                         End If
-
                     Case frm_BPmCagetory
                         If Not _Collection.ContainsKey(FormUID) Then
                             oItemObject = New clsBPCategory
                             oItemObject.FrmUID = FormUID
                             _Collection.Add(FormUID, oItemObject)
                         End If
-
                     Case frm_WhsCagetory
                         If Not _Collection.ContainsKey(FormUID) Then
                             oItemObject = New clsWarehouseCategory
@@ -446,7 +494,7 @@ Public Class clsListener
                             oItemObject.FrmUID = FormUID
                             _Collection.Add(FormUID, oItemObject)
                         End If
-                    Case frm_BPMaster, frm_ItemMaster, frm_Warehouse
+                    Case frm_BPMaster, frm_ItemMaster, frm_Warehouse, frm_FixedAsset
                         If Not _Collection.ContainsKey(FormUID) Then
                             oItemObject = New clsMasters
                             oItemObject.FrmUID = FormUID
@@ -584,7 +632,7 @@ Public Class clsListener
                             _Collection.Add(FormUID, oItemObject)
                         End If
 
-                   
+
                     Case frm_PurchaseOrder
                         If Not _Collection.ContainsKey(FormUID) Then
                             oItemObject = New clsPurchaseOrder
@@ -602,6 +650,13 @@ Public Class clsListener
                     Case frm_Z_OCPR
                         If Not _Collection.ContainsKey(FormUID) Then
                             oItemObject = New clsPromotionMapping
+                            oItemObject.FrmUID = FormUID
+                            _Collection.Add(FormUID, oItemObject)
+                        End If
+
+                    Case frm_Z_OCPRS
+                        If Not _Collection.ContainsKey(FormUID) Then
+                            oItemObject = New clsPromotionMappingSupplier
                             oItemObject.FrmUID = FormUID
                             _Collection.Add(FormUID, oItemObject)
                         End If
@@ -664,6 +719,9 @@ Public Class clsListener
                 oMenuObject.RightClickEvent(eventInfo, BubbleEvent)
             ElseIf (oForm.TypeEx = frm_Z_OPRM) Then
                 oMenuObject = New clsPromotion
+                oMenuObject.RightClickEvent(eventInfo, BubbleEvent)
+            ElseIf (oForm.TypeEx = frm_ItemMaster) Then
+                oMenuObject = New clsMasters
                 oMenuObject.RightClickEvent(eventInfo, BubbleEvent)
             End If
         Catch ex As Exception
@@ -761,6 +819,7 @@ Public Class clsListener
 
     Public Class WindowWrapper
         Implements System.Windows.Forms.IWin32Window
+
         Private _hwnd As IntPtr
 
         Public Sub New(ByVal handle As IntPtr)
@@ -774,8 +833,5 @@ Public Class clsListener
         End Property
 
     End Class
-
-    Private Sub _SBO_Application_LayoutKeyEvent(ByRef eventInfo As SAPbouiCOM.LayoutKeyInfo, ByRef BubbleEvent As Boolean) Handles _SBO_Application.LayoutKeyEvent
-
-    End Sub
+    
 End Class

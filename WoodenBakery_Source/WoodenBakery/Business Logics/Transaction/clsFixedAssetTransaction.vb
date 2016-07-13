@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Public Class clsFixedAssetTransaction
+
     Inherits clsBase
     Private oCFLEvent As SAPbouiCOM.IChooseFromListEvent
     Private oDBSrc_Line As SAPbouiCOM.DBDataSource
@@ -96,19 +97,59 @@ Public Class clsFixedAssetTransaction
             'oCFLCreationParams.ObjectType = "Z_HR_OCOCA"
             'oCFLCreationParams.UniqueID = "CFL5"
             'oCFL = oCFLs.Add(oCFLCreationParams)
-            oCFL = oCFLs.Item("CFL_2")
-            oCons = oCFL.GetConditions()
-            oCon = oCons.Add()
-            oCon.Alias = "ItemType"
-            oCon.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL
-            oCon.CondVal = "F"
-            oCFL.SetConditions(oCons)
-            oCon = oCons.Add()
 
+            'oCFL = oCFLs.Item("CFL_2")
+            'oCons = oCFL.GetConditions()
+            'oCon = oCons.Add()
+            'oCon.Alias = "ItemType"
+            'oCon.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL
+            'oCon.CondVal = "F"
+            'oCFL.SetConditions(oCons)
+
+            addCFLCondition(objForm)
+
+            'oCFL = oCFLs.Item("CFL_9")
+            'oCons = oCFL.GetConditions()
+            'oCon = oCons.Add()
+            'oCon.[Alias] = "U_Program"
+            'oCon.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL
+            'oCon.CondVal = "Y"
+            'oCFL.SetConditions(oCons)
 
 
         Catch ex As Exception
             MsgBox(ex.Message)
+        End Try
+    End Sub
+
+    Private Sub addCFLCondition(ByVal objForm As SAPbouiCOM.Form)
+        Try
+            Dim oCFLs As SAPbouiCOM.ChooseFromListCollection
+            Dim oCons As SAPbouiCOM.Conditions
+            Dim oCon As SAPbouiCOM.Condition
+
+            oCFLs = objForm.ChooseFromLists
+            Dim oCFL As SAPbouiCOM.ChooseFromList
+            oCFL = oCFLs.Item("CFL_2")
+            oCons = oCFL.GetConditions()
+            oCon = oCons.Add()
+            oCon.BracketOpenNum = 2
+            oCon.Alias = "U_Z_USERCODE"
+            oCon.Operation = SAPbouiCOM.BoConditionOperation.co_CONTAIN
+            oCon.CondVal = oApplication.Company.UserName
+            oCon.BracketCloseNum = 1
+            oCon.Relationship = SAPbouiCOM.BoConditionRelationship.cr_AND
+
+            oCon = oCons.Add
+            oCon.BracketOpenNum = 1
+            oCon.Alias = "ItemType"
+            oCon.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL
+            oCon.CondVal = "f"
+            oCon.BracketCloseNum = 2
+            oCFL.SetConditions(oCons)
+
+        Catch ex As Exception
+
         End Try
     End Sub
 
@@ -124,7 +165,11 @@ Public Class clsFixedAssetTransaction
             oApplication.Utilities.setEdittextvalue(aform, "7", "t")
             oApplication.SBO_Application.SendKeys("{TAB}")
             aform.Items.Item("31").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
-            aform.Items.Item("7").Enabled = False
+            Try
+                aform.Items.Item("7").Enabled = False
+            Catch ex As Exception
+
+            End Try
             aform.Items.Item("1").Enabled = True
             aform.Freeze(False)
             oForm.Update()
@@ -279,8 +324,8 @@ Public Class clsFixedAssetTransaction
 
                             Case SAPbouiCOM.BoEventTypes.et_CLICK
                                 oForm = oApplication.SBO_Application.Forms.Item(FormUID)
-                               
-                                If (pVal.ItemUID <> "1" And pVal.ItemUID <> "2") And (oForm.Mode <> SAPbouiCOM.BoFormMode.fm_ADD_MODE) Then
+
+                                If (pVal.ItemUID <> "1" And pVal.ItemUID <> "2") And (oForm.Mode <> SAPbouiCOM.BoFormMode.fm_ADD_MODE) And (pVal.ItemUID <> "") Then
                                     Dim oDoc As SAPbouiCOM.DBDataSource
                                     oDoc = oForm.DataSources.DBDataSources.Item(0)
                                     Dim oItem As SAPbouiCOM.Item
@@ -327,6 +372,11 @@ Public Class clsFixedAssetTransaction
                                     Dim objHistory As New clsAppHistory
                                     objHistory.LoadForm(oForm, oApplication.Utilities.getEdittextvalue(oForm, "5"), HeaderDoctype.Fix)
                                 End If
+                            Case SAPbouiCOM.BoEventTypes.et_CHOOSE_FROM_LIST
+                                oForm = oApplication.SBO_Application.Forms.Item(FormUID)
+                                If pVal.ItemUID = "23" And oForm.Mode = SAPbouiCOM.BoFormMode.fm_ADD_MODE Then
+                                    'AddChooseFromList(oForm)
+                                End If
                         End Select
 
                     Case False
@@ -338,8 +388,6 @@ Public Class clsFixedAssetTransaction
                                 oForm = oApplication.SBO_Application.Forms.Item(FormUID)
                                 oCombobox = oForm.Items.Item(pVal.ItemUID).Specific
                                 If pVal.ItemUID = "11" Then
-
-
                                     If oCombobox.Selected.Value = "C" Then
                                         oForm.Items.Item("34").Enabled = True
                                         oForm.Items.Item("36").Enabled = True

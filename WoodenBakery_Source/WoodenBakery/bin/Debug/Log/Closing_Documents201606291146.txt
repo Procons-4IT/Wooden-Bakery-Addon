@@ -1,0 +1,2 @@
+﻿DocType	DocumentNumber	CustomerCode	CustomerName	LineNum	ItemCode	ItemDesc	Quantity	Remakrs
+Sales Order	113	16100002	C0002	Chadi Hassik	1	S-3001001001	Pita White Big (Bag*8 Loaves 1000 Grs)	Closed Successfully	

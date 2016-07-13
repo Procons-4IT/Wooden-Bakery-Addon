@@ -60,7 +60,7 @@ Public NotInheritable Class clsTable
         Dim oUserFieldMD As SAPbobsCOM.UserFieldsMD
         Try
 
-            If Not (strTab = "OINC" Or strTab = "OSCN" Or strTab = "OADM" Or strTab = "ORCT" Or strTab = "OVPM" Or strTab = "OPCH" Or strTab = "OITM" Or strTab = "OJDT" Or strTab = "INV1" Or strTab = "RDR1" Or strTab = "OINV" Or strTab = "OCRD" Or strTab = "SPP1" Or strTab = "OWHS") Then
+            If Not (strTab = "OINC" Or strTab = "OSCN" Or strTab = "OADM" Or strTab = "ORCT" Or strTab = "OVPM" Or strTab = "OPCH" Or strTab = "OITM" Or strTab = "OJDT" Or strTab = "INV1" Or strTab = "RDR1" Or strTab = "DRF1" Or strTab = "ODRF" Or strTab = "OINV" Or strTab = "OCRD" Or strTab = "SPP1" Or strTab = "OWHS" Or strTab = "OCRD") Then
                 strTab = "@" + strTab
             End If
 
@@ -395,7 +395,8 @@ Public NotInheritable Class clsTable
             AddTables("Z_OFATA", "Fixed Asset Transaction ", SAPbobsCOM.BoUTBTableType.bott_Document)
             AddFields("Z_OFATA", "Z_Code", "Item Code", SAPbobsCOM.BoFieldTypes.db_Alpha, , 20)
             AddFields("Z_OFATA", "Z_Name", "Description", SAPbobsCOM.BoFieldTypes.db_Alpha, , 100)
-            addField("@Z_OFATA", "Z_TransType", "Transaction Type", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_Address, "L,E,C", "Location,Employee Transfer,CostCenter", "L")
+            ',CostCenter,C
+            addField("@Z_OFATA", "Z_TransType", "Transaction Type", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_Address, "L,E", "Location,Employee Transfer", "L")
             AddFields("Z_OFATA", "Z_FromCode", "Transfer From ", SAPbobsCOM.BoFieldTypes.db_Alpha, , 30)
             AddFields("Z_OFATA", "Z_FName", "Description", SAPbobsCOM.BoFieldTypes.db_Alpha, , 100)
             AddFields("Z_OFATA", "Z_ToCode", "Transfer To", SAPbobsCOM.BoFieldTypes.db_Alpha, , 30)
@@ -595,16 +596,17 @@ Public NotInheritable Class clsTable
             AddFields("OINV", "Z_DelDate", "Delivery Date", SAPbobsCOM.BoFieldTypes.db_Date)
             addField("OINV", "Z_IsDel", "Is Delivered", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_Address, "Y,N", "Yes,No", "N")
             AddFields("OINV", "Z_DelRef", "Delivery Reference", SAPbobsCOM.BoFieldTypes.db_Alpha, , 20)
+            AddFields("OINV", "Z_ScnUser", "Scanned User", SAPbobsCOM.BoFieldTypes.db_Alpha, , 100)
 
 
             AddFields("ORCT", "Z_DelDate", "Delivery Date", SAPbobsCOM.BoFieldTypes.db_Date)
             addField("ORCT", "Z_IsDel", "Is Delivered", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_Address, "Y,N", "Yes,No", "N")
             AddFields("ORCT", "Z_DelRef", "Delivery Reference", SAPbobsCOM.BoFieldTypes.db_Alpha, , 20)
-
+            AddFields("ORCT", "Z_ScnUser", "Scanned User", SAPbobsCOM.BoFieldTypes.db_Alpha, , 100)
             AddFields("OVPM", "Z_DelDate", "Delivery Date", SAPbobsCOM.BoFieldTypes.db_Date)
             addField("OVPM", "Z_IsDel", "Is Delivered", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_Address, "Y,N", "Yes,No", "N")
             AddFields("OVPM", "Z_DelRef", "Delivery Reference", SAPbobsCOM.BoFieldTypes.db_Alpha, , 20)
-
+            AddFields("OVPM", "Z_ScnUser", "Scanned User", SAPbobsCOM.BoFieldTypes.db_Alpha, , 100)
             AddTables("Z_ODEL", "Delivery Document Header", SAPbobsCOM.BoUTBTableType.bott_Document)
             AddFields("Z_ODEL", "Z_DocDate", "Document Date", SAPbobsCOM.BoFieldTypes.db_Date)
             AddFields("Z_ODEL", "Z_DelDate", "Delivery Date", SAPbobsCOM.BoFieldTypes.db_Date)
@@ -689,9 +691,24 @@ Public NotInheritable Class clsTable
             addField("Z_ICT1", "Z_Status", "Status", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_None, "O,L,C", "Open,Cancelled,Close", "O")
             AddFields("Z_ICT1", "Z_Remarks", "Line Remarks", SAPbobsCOM.BoFieldTypes.db_Memo)
             AddFields("Z_ICT1", "Z_ICRef", "Inventory Count Ref", SAPbobsCOM.BoFieldTypes.db_Alpha, , 10)
+            AddFields("Z_ICT1", "Z_IUOM", "Inventory UOM", SAPbobsCOM.BoFieldTypes.db_Alpha, , 30)
+            AddFields("Z_ICT1", "Z_IQty", "Inventory Quantity", SAPbobsCOM.BoFieldTypes.db_Float, , , SAPbobsCOM.BoFldSubTypes.st_Quantity)
 
             AddFields("OINC", "Z_ICTREF", "Inventory Count Ref", SAPbobsCOM.BoFieldTypes.db_Alpha, , 10)
             AddFields("OINC", "Z_ICTREFL", "Inventory Count Ref L", SAPbobsCOM.BoFieldTypes.db_Alpha, , 10)
+
+            'ESS Fields
+            addField("OCRD", "Z_AllReturn", "Allow Returns", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_None, "N,Y", "No,Yes", "N")
+            addField("OCRD", "Z_AllStAcc", "Allow Statement of Accounts", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_None, "N,Y", "No,Yes", "N")
+            AddFields("ORDR", "Z_Noofdays", "No.of days in Del/post date", SAPbobsCOM.BoFieldTypes.db_Numeric)
+            AddFields("RDR1", "Z_Noofdays", "No.of days in Del/post date", SAPbobsCOM.BoFieldTypes.db_Numeric)
+            AddFields("DRF1", "Z_Noofdays", "No.of days in Del/post date", SAPbobsCOM.BoFieldTypes.db_Numeric)
+            AddFields("ODRF", "Z_Noofdays", "No.of days in Del/post date", SAPbobsCOM.BoFieldTypes.db_Numeric)
+
+            'Item Category -2016-01-05
+            addField("OITM", "Z_Identifier", "Identifier", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, SAPbobsCOM.BoFldSubTypes.st_Address, "F,V", "Fixed,Variable", "F")
+
+            AddFields("OCRD", "Driver", "Driver Name", SAPbobsCOM.BoFieldTypes.db_Alpha, , 50)
 
             CreateUDO()
         Catch ex As Exception

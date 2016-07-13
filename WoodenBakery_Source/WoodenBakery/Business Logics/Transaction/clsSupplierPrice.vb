@@ -215,24 +215,38 @@ Public Class clsSupplierPrice
                                     stXML = stXML.Replace("</DocEntry></Vendor_PriceParams>", "")
                                     stXML = stXML.Replace("<?xml version=""1.0"" encoding=""UTF-16"" ?><Vendor PriceParams><DocEntry>", "")
                                     stXML = stXML.Replace("</DocEntry></Vendor PriceParams>", "")
-                                    Dim otest As SAPbobsCOM.Recordset
+                                    Dim otest, oItem As SAPbobsCOM.Recordset
                                     otest = oApplication.Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+                                    oItem = oApplication.Company.GetBusinessObject(BoObjectTypes.BoRecordset)
                                     If stXML <> "" Then
                                         otest.DoQuery("select * from ""@Z_OVPL""  where ""DocEntry""=" & stXML)
                                         If otest.RecordCount > 0 Then
                                             Dim strDocEntry As String = otest.Fields.Item("DocEntry").Value
-                                            If otest.Fields.Item("U_Z_DocStatus").Value = "N" Then
-                                                Dim intTempID As String = oApplication.ApplProcedure.GetTemplateID(HeaderDoctype.Spl, otest.Fields.Item("U_Z_CardCode").Value, "@Z_APPT1", "U_Z_EmpId") 'oApplication.Utilities.GetTemplateID(oForm, HeaderDoctype.Train, otest.Fields.Item("U_Z_HREmpID").Value)
-                                                If intTempID <> "0" Then
-                                                    oApplication.ApplProcedure.UpdateApprovalRequired("@Z_OVPL", "DocEntry", otest.Fields.Item("DocEntry").Value, "Y", intTempID, "P")
-                                                    Dim strMessage As String = "Supplier Price transaction need approval for the transaction id is : " & otest.Fields.Item("DocEntry").Value
-                                                    oApplication.ApplProcedure.InitialCurNextApprover("@Z_OVPL", "DocEntry", otest.Fields.Item("DocEntry").Value, intTempID, strMessage, "Supplier Price Approval Notification")
-                                                    otest.DoQuery("Update ""@Z_OVPL"" set ""U_Z_DocStatus""='P' where ""DocEntry""=" & otest.Fields.Item("DocEntry").Value & "")
+                                            If 1 = 1 Then
+                                                If blnIsHanaDB = True Then
+                                                    oItem.DoQuery("Select ifnull(""U_Z_Identifier"",'F') from OITM where ""ItemCode""='" & otest.Fields.Item("U_Z_ItemCode").Value & "'")
                                                 Else
+                                                    oItem.DoQuery("Select isnull(""U_Z_Identifier"",'F') from OITM where ""ItemCode""='" & otest.Fields.Item("U_Z_ItemCode").Value & "'")
+                                                End If
+                                                If 1 = 1 Then ' oItem.Fields.Item(0).Value = "F" Then 'Validate the Item Identifier whether Fixed or Variable
+                                                    Dim intTempID As String = oApplication.ApplProcedure.GetTemplateID(HeaderDoctype.Spl, otest.Fields.Item("U_Z_CardCode").Value, "@Z_APPT1", "U_Z_EmpId") 'oApplication.Utilities.GetTemplateID(oForm, HeaderDoctype.Train, otest.Fields.Item("U_Z_HREmpID").Value)
+                                                    If intTempID <> "0" Then
+                                                        oApplication.ApplProcedure.UpdateApprovalRequired("@Z_OVPL", "DocEntry", otest.Fields.Item("DocEntry").Value, "Y", intTempID, "P")
+                                                        Dim strMessage As String = "Supplier Price transaction need approval for the transaction id is : " & otest.Fields.Item("DocEntry").Value
+                                                        oApplication.ApplProcedure.InitialCurNextApprover("@Z_OVPL", "DocEntry", otest.Fields.Item("DocEntry").Value, intTempID, strMessage, "Supplier Price Approval Notification")
+                                                        otest.DoQuery("Update ""@Z_OVPL"" set ""U_Z_DocStatus""='P' where ""DocEntry""=" & otest.Fields.Item("DocEntry").Value & "")
+                                                    Else
+                                                        oApplication.ApplProcedure.UpdateApprovalRequired("@Z_OVPL", "DocEntry", otest.Fields.Item("DocEntry").Value, "N", intTempID, "A")
+                                                        otest.DoQuery("Update ""@Z_OVPL"" set ""U_Z_DocStatus""='A' where ""DocEntry""=" & otest.Fields.Item("DocEntry").Value & "")
+                                                        oApplication.Utilities.UpdateSupplierCatelog(strDocEntry)
+                                                    End If
+                                                Else 'Validate the Item Identifier whether Fixed or Variable
+                                                    Dim intTempID As String = oApplication.ApplProcedure.GetTemplateID(HeaderDoctype.Spl, otest.Fields.Item("U_Z_CardCode").Value, "@Z_APPT1", "U_Z_EmpId") 'oApplication.Utilities.GetTemplateID(oForm, HeaderDoctype.Train, otest.Fields.Item("U_Z_HREmpID").Value)
                                                     oApplication.ApplProcedure.UpdateApprovalRequired("@Z_OVPL", "DocEntry", otest.Fields.Item("DocEntry").Value, "N", intTempID, "A")
                                                     otest.DoQuery("Update ""@Z_OVPL"" set ""U_Z_DocStatus""='A' where ""DocEntry""=" & otest.Fields.Item("DocEntry").Value & "")
                                                     oApplication.Utilities.UpdateSupplierCatelog(strDocEntry)
                                                 End If
+
                                             End If
                                         End If
                                     End If
@@ -262,7 +276,15 @@ Public Class clsSupplierPrice
         addChooseFromList(oForm)
         fillCombo(oForm)
         oForm.DataBrowser.BrowseBy = "_8_"
+
+        oForm.Items.Item("3").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 1, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
+        oForm.Items.Item("4").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 1, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
+        oForm.Items.Item("6").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 1, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
+        oForm.Items.Item("6_").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 1, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
+        'oForm.Items.Item("24").SetAutoManagedAttribute(SAPbouiCOM.BoAutoManagedAttr.ama_Editable, 1, SAPbouiCOM.BoModeVisualBehavior.mvb_False)
+
         oForm.Mode = SAPbouiCOM.BoFormMode.fm_FIND_MODE
+        oForm.Items.Item("1").Enabled = True
         oForm.Freeze(False)
     End Sub
 
@@ -290,6 +312,7 @@ Public Class clsSupplierPrice
         Try
             oDBDataSource = oForm.DataSources.DBDataSources.Item("@Z_OVPL")
 
+            oForm.Items.Item("1").Enabled = True
             oForm.Items.Item("4").Enabled = True
             oForm.Items.Item("7").Click(SAPbouiCOM.BoCellClickType.ct_Regular)
             oApplication.Utilities.setEdittextvalue(oForm, "9", System.DateTime.Now.ToString("yyyyMMdd"))
@@ -369,9 +392,11 @@ Public Class clsSupplierPrice
             aform.Freeze(True)
             Select Case aform.Mode
                 Case SAPbouiCOM.BoFormMode.fm_ADD_MODE
+                    aform.Items.Item("1").Enabled = True
                     aform.Items.Item("4").Enabled = False
                     aform.Items.Item("6").Enabled = False
                 Case SAPbouiCOM.BoFormMode.fm_FIND_MODE
+                    aform.Items.Item("1").Enabled = True
                     aform.Items.Item("4").Enabled = True
                     aform.Items.Item("6").Enabled = True
             End Select

@@ -107,7 +107,11 @@
                             Case SAPbouiCOM.BoEventTypes.et_KEY_DOWN
                             Case SAPbouiCOM.BoEventTypes.et_FORM_RESIZE
                                 If oForm.State = SAPbouiCOM.BoFormStateEnum.fs_Restore Or oForm.State = SAPbouiCOM.BoFormStateEnum.fs_Maximized Then
-                                    ' oApplication.ApplProcedure.Resize(oForm)
+                                    Try
+                                        reDrawForm(oForm)
+                                    Catch ex As Exception
+
+                                    End Try
                                 End If
                         End Select
                 End Select
@@ -172,6 +176,41 @@
         oForm.Items.Item("4").TextStyle = 7
         oForm.Items.Item("5").TextStyle = 7
         oForm.Freeze(False)
+    End Sub
+
+    Private Sub reDrawForm(ByVal oForm As SAPbouiCOM.Form)
+        Try
+            oForm.Freeze(True)
+            'Rectangle
+            oForm.Items.Item("16").Width = oForm.Width - 25
+            oForm.Items.Item("16").Height = oForm.Height - 100
+
+
+
+            oForm.Items.Item("1").Height = (oForm.Items.Item("16").Height - 40) / 2
+            oForm.Items.Item("1").Width = oForm.Items.Item("16").Width - 10
+
+            oForm.Items.Item("4").Top = oForm.Items.Item("1").Top + oForm.Items.Item("1").Height + 20
+
+
+            oForm.Items.Item("3").Top = oForm.Items.Item("4").Top + oForm.Items.Item("4").Height + 10
+            oForm.Items.Item("3").Height = oForm.Items.Item("1").Height - 20
+            oForm.Items.Item("3").Width = (oForm.Items.Item("1").Width + 50) / 2
+
+            oForm.Items.Item("19").Height = (oForm.Items.Item("16").Height - 40) / 2
+            oForm.Items.Item("19").Width = oForm.Items.Item("16").Width - 10
+
+
+            oForm.Items.Item("20").Top = oForm.Items.Item("19").Top + oForm.Items.Item("19").Height + 20
+            oForm.Items.Item("20").Width = oForm.Items.Item("19").Width
+            oForm.Items.Item("20").Height = oForm.Items.Item("19").Height
+
+
+
+            oForm.Freeze(False)
+        Catch ex As Exception
+            oForm.Freeze(False)
+        End Try
     End Sub
 
 #Region "Approval Functions"
